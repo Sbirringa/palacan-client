@@ -160,8 +160,11 @@ Impronte: ML-DSA-65 `b17eb99909ede552…`, ed25519 `laOmhJxypCT8…`.
 - **Custodia della chiave di rilascio.** La chiave di rilascio è una sola persona, con un solo PC e una copia su
   chiavetta, cifrata con una passphrase (scrypt + AES-256-GCM). Se va persa, serve una chiave nuova e una nuova
   versione dell'estensione. Chi ottiene sia il file sia la passphrase può firmare.
-- **Metadati.** Il server vede chi parla con chi, quando e quanto (non cosa): non c'è nessun "mittente sigillato".
-  La pulizia (L2a) riduce quanto a lungo questi dati restano, ma non li elimina mentre servono alla consegna.
+- **Metadati.** Il server sa chi è membro di quale chat e, mentre consegna i messaggi, vede quando i dispositivi
+  sono collegati (indirizzi IP e momenti delle connessioni). Per le chat private non conserva chi ha mandato un
+  messaggio, arrotonda l'ora e nasconde la lunghezza; le chiavi di stanza viaggiano in buste sigillate (il server vede
+  il destinatario, non il mittente). La pulizia (L2a) riduce quanto a lungo questi dati restano, ma non li elimina
+  mentre servono alla consegna. Dettagli in inglese: `docs/ARCHITECTURE.md`. [palacan-d1]
 - **Chiamate.** Il rifiuto e la fine di una chiamata viaggiano in chiaro. Chi controlla il server può chiudere una
   chiamata o impedirla (negazione del servizio), ma non ascoltarla né inserirsi. Il server di supporto della
   chiamata (TURN) vede gli indirizzi IP. La videochiamata è provata solo sullo stesso PC: la prova con due

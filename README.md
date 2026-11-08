@@ -38,7 +38,7 @@ This repository contains **only the code that runs on your device**: the Palacan
 
 License: **all rights reserved**. You may only read and verify this code (see `LICENSE`).
 
-Exported from the development repository, commit `c58901e` (2026-11-09).
+Exported from the development repository, commit `d1261f8` (2026-11-09).
 
 ## Why the server code is not here
 
@@ -67,11 +67,19 @@ To do this automatically every time you open the website, use the **Palacan Veri
 
 ## What is proven
 
-The cryptographic properties (post-quantum envelope, hybrid signature, Olm and Megolm ratchets) are proven with
-ProVerif and Kani: see `formale/README.md`, which also states the limits.
+The cryptographic properties (post-quantum envelope, hybrid signature, Olm and Megolm ratchets, renewal of
+post-quantum keys) are proven with ProVerif and Kani: see `formale/README.md`, which also states the limits.
+
+## Documentation
+
+- [`docs/PROTOCOL.md`](docs/PROTOCOL.md): how messages are encrypted and keys are managed, step by step.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): what runs where, what the server can see, and the threat model.
+- [`docs/VERIFICATION.md`](docs/VERIFICATION.md): how to check the website, the proofs and the tests yourself.
+- [`SECURITY.md`](SECURITY.md): how to report a vulnerability.
 
 ## Reporting a vulnerability
 
-Use "Report a vulnerability" in the **Security** tab of this repository (private report).
+Use "Report a vulnerability" in the **Security** tab of this repository (private report). Details, scope and response
+times are in [`SECURITY.md`](SECURITY.md).
 
 Note: most comments and documents inside the code are in Italian.
