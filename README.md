@@ -1,11 +1,44 @@
 # Palacan - client source code (read and verify only)
 
+## What is Palacan
+
+Palacan is an end-to-end encrypted messenger for people and for companies. It runs in the browser and is available
+in English, Italian, French, Spanish and German.
+
+### For everyone (free)
+
+- Free for everyone.
+- Sign up with just a username and a password: no email, no phone number.
+- One-to-one and group chats, end-to-end encrypted (Olm and Megolm via vodozemac) with post-quantum protection
+  (ML-KEM-768, ML-DSA-65).
+- Voice and video calls, always relayed, so the other person never sees your IP address.
+- Safety numbers to verify a contact, and a warning if a contact's key changes.
+- Several devices on the same account, and an encrypted backup protected by your password.
+- Your chat history is stored encrypted on your device.
+- Reactions are end-to-end encrypted too, like messages.
+- Nobody can write to you out of the blue: an invite link only lets someone *find* you, and you accept the request.
+  You join groups only by direct invitation.
+- Messages that delete themselves after a time you choose.
+- Minimal metadata: for private chats the server does not store who sent a message, times are rounded to the hour
+  and messages are padded to hide their length. Details and limits are in `formale/README.md`.
+
+### For companies
+
+- A separate workspace for each company.
+- No email or phone number needed for company accounts either.
+- Company accounts are fully separate: employees cannot find or contact free users, or employees of other companies.
+- Admin roles, employee accounts created by the admin, and tasks.
+- Company chats are end-to-end encrypted too: the server does not store who sent a message, and the admin cannot
+  look it up. Company messages are never deleted automatically.
+
+## This repository
+
 This repository contains **only the code that runs on your device**: the Palacan web app, the cryptography module
 (`crypto/palacan-crypto`: vodozemac + ML-KEM-768 + ML-DSA-65) and the formal models (`formale/`).
 
 License: **all rights reserved**. You may only read and verify this code (see `LICENSE`).
 
-Exported from the development repository, commit `f63e0ba` (2026-11-08).
+Exported from the development repository, commit `823119b` (2026-11-08).
 
 ## Why the server code is not here
 
