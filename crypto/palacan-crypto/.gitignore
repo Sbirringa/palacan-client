@@ -1,0 +1,5 @@
+/target
+/pkg
+tests_vettori_vodozemac.json
+# [palacan-pq6b] input delle prove proptest cadute (es. durante i mutanti): mai nel repository
+*.proptest-regressions

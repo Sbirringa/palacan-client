@@ -1,0 +1,68 @@
+# .github/workflows/build-verificabile.yml  [palacan-l1b]
+#
+# Build verificabile del frontend: la CI rifa' la build dal codice PUBBLICO (configurazione pubblica in
+# sicurezza/configurazione-pubblica.json, nessun segreto) e salva l'elenco delle impronte SHA-256 di ogni file
+# (artefatto "impronte-<commit>", 90 giorni). Chiunque puo' confrontarlo con il sito vero:
+#   node scripts/verificaSito.mjs --confronta palacan-impronte.json
+# Con il pulsante "Run workflow" e "confronta_sito" la CI fa anche il confronto con il sito pubblicato (sola
+# lettura, come un visitatore): non parte da sola, per non toccare la produzione a ogni push.
+name: Build verificabile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/my-react-app/vite-project/**"
+      - ".github/workflows/build-verificabile.yml"
+  workflow_dispatch:
+    inputs:
+      confronta_sito:
+        description: "Confronta anche con il sito pubblicato (sola lettura)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-verificabile-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build riproducibile e impronte
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend/my-react-app/vite-project
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/my-react-app/vite-project/package-lock.json
+      - name: Dipendenze esatte (package-lock.json)
+        run: npm ci
+      - name: Build (configurazione pubblica, nessun segreto)
+        run: npm run build
+      - name: Impronte della build
+        run: |
+          impronta=$(sha256sum dist/palacan-impronte.json | cut -d' ' -f1)
+          quanti=$(node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('dist/palacan-impronte.json','utf8')).file).length)")
+          {
+            echo "### Build verificabile"
+            echo "- commit: \`${GITHUB_SHA}\`"
+            echo "- file: ${quanti}"
+            echo "- impronta di palacan-impronte.json: \`${impronta}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Elenco delle impronte (artefatto)
+        uses: actions/upload-artifact@v7
+        with:
+          name: impronte-${{ github.sha }}
+          path: frontend/my-react-app/vite-project/dist/palacan-impronte.json
+          retention-days: 90
+      - name: Confronto con il sito pubblicato
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.confronta_sito }}
+        run: node scripts/verificaSito.mjs --confronta dist/palacan-impronte.json

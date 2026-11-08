@@ -1,0 +1,84 @@
+(* =====================================================================================================================
+   Palacan - modello formale 5: il double ratchet di Olm, prima e dopo un furto dello stato     [palacan-l6]
+
+   Cosa modella (vodozemac, sessioni Olm 1:1 tra dispositivi):
+     - la radice rk0 nasce dalla 3DH (dimostrata nei modelli 1-3, qui segreta e poi cancellata);
+     - passo DH del ratchet: con il segreto DH nuovo si ricavano una radice nuova (nr) e una catena nuova (nc);
+       la catena avanza a senso unico (nx) e ogni messaggio ha la sua chiave (mk); le chiavi usate si cancellano;
+     - lo stato di Alice in un momento = radice attuale, catena attuale, chiave privata di ratchet attuale.
+   Attaccante: rete e server (Dolev-Yao). In FASE 1 ruba lo stato di Alice (radice rk1, catena, chiave a1).
+   Domande:
+     - x1 (inviato PRIMA del furto) resta segreto                              -> VERO  (segretezza in avanti)
+     - x2 (stessa catena, DOPO il furto) si legge                              -> FALSO (atteso: lo stato rubato vale
+                                                                                         fino al passo DH nuovo)
+     - x3 (dopo un giro di chiavi DH nuove, con l'attaccante che in quel giro
+           guarda ma non modifica) resta segreto                              -> VERO  (sicurezza dopo il furto)
+     - x4 (se in quel giro l'attaccante sostituisce la chiave di Bob con la sua) si legge
+                                                                               -> FALSO (limite: la guarigione
+                                                                                         richiede un giro non manomesso)
+     - Bob riceve x3 (modello non vuoto)                                       -> raggiungibile
+   ===================================================================================================================== *)
+
+free c: channel.
+
+type key.
+type G.
+type exponent.
+
+const g: G [data].
+fun dh(G, exponent): G.
+equation forall x: exponent, y: exponent; dh(dh(g, x), y) = dh(dh(g, y), x).
+
+fun nr(key, G): key.   (* radice nuova da radice + segreto DH *)
+fun nc(key, G): key.   (* catena nuova da radice + segreto DH *)
+fun nx(key): key.      (* passo della catena: a senso unico *)
+fun mk(key): key.      (* chiave del messaggio *)
+
+fun senc(bitstring, key): bitstring.
+reduc forall m: bitstring, k: key; sdec(senc(m, k), k) = m.
+
+free rk0: key [private].
+free x1, x2, x3, x4: bitstring [private].
+
+event Ricevuto(bitstring).
+
+query attacker(x1) phase 1.
+query attacker(x2) phase 1.
+query attacker(x3) phase 1.
+query attacker(x4) phase 1.
+query event(Ricevuto(x3)).
+
+process
+  new b0: exponent;                       (* chiave di ratchet di Bob, pubblica *)
+  out(c, dh(g, b0));
+  new a1: exponent;                       (* Alice: passo DH, catena di invio *)
+  let s1 = dh(dh(g, b0), a1) in
+  let rk1 = nr(rk0, s1) in
+  let c1 = nc(rk0, s1) in
+  out(c, (dh(g, a1), senc(x1, mk(c1))));
+  phase 1;
+  out(c, (rk1, nx(c1), a1));              (* FURTO dello stato di Alice: radice, catena, chiave di ratchet *)
+  out(c, senc(x2, mk(nx(c1))));           (* messaggio successivo sulla stessa catena *)
+  (
+    (
+      (* giro non manomesso: Bob risponde con una chiave nuova, Alice fa un passo DH nuovo *)
+      new b1: exponent;
+      out(c, dh(g, b1));
+      let rk2 = nr(rk1, dh(dh(g, a1), b1)) in
+      new a2: exponent;
+      let c3 = nc(rk2, dh(dh(g, b1), a2)) in
+      let cifrato = senc(x3, mk(c3)) in
+      out(c, (dh(g, a2), cifrato));
+      (* Bob ricava la stessa catena dal suo lato *)
+      let x = sdec(cifrato, mk(nc(rk2, dh(dh(g, a2), b1)))) in
+      event Ricevuto(x)
+    )
+  | (
+      (* giro manomesso: Alice riceve dalla rete una "chiave di Bob" scelta dall'attaccante *)
+      in(c, finta: G);
+      let rkf = nr(rk1, dh(finta, a1)) in
+      new a3: exponent;
+      let cf = nc(rkf, dh(finta, a3)) in
+      out(c, (dh(g, a3), senc(x4, mk(cf))))
+    )
+  )

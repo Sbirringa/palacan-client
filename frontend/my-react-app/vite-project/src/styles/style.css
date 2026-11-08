@@ -1,0 +1,652 @@
+@charset "UTF-8"; /* Questa deve essere la primissima riga del file, senza nulla sopra. */
+/* [palacan-l1a] tolto l'@import dei caratteri da Google: i caratteri sono locali (Fontsource, main.jsx) e la CSP non ammette richieste a Google */
+
+/* Reset base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0d0d0d; /* Sfondo scuro per un tema moderno */
+    color: #e0e0e0; /* Testo chiaro */
+    height: 100%;
+    width: 100%;
+    line-height: 1.6;
+}
+
+/* Main container (similar to previous main-container, but adapted for dark theme) */
+.main-container {
+    background-color: #1e1e2f; /* Sfondo scuro per il container principale */
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 20px rgba(255, 60, 172, 0.2); /* Ombra con gradiente rosa/viola */
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 20px auto; /* Centra orizzontalmente e aggiunge margine */
+    min-height: calc(100vh - 40px); /* Assicura che sia alto almeno quanto la viewport meno i margini */
+}
+
+
+/* Page sections styling */
+.page-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 2rem; /* Adattato al tema scuro */
+    margin: 0 auto; /* Rimosso margin-top/bottom qui, gestito dal main-container flex */
+    border-radius: 1.25rem; /* Bordi arrotondati come il container principale */
+    box-sizing: border-box;
+    display: none; /* Gestito da JS */
+    color: #e0e0e0; /* Testo chiaro per le sezioni */
+}
+
+/* Stili per il blocco introduttivo (page2_welcome) */
+#page2_welcome {
+    background: #1e1e2f; /* Sfondo scuro per il blocco */
+    box-shadow: 0 8px 20px rgba(255, 60, 172, 0.2);
+    padding: 1.5rem 2rem;
+    max-width: 600px; /* Larghezza specifica */
+    margin-bottom: 2rem; /* Spazio sotto */
+}
+
+#page2_welcome h1 { /* cambiato da h2 in html */
+    font-size: 1.8rem; /* Font size più grande per il titolo principale */
+    font-weight: 700;
+    color: #ff3cac; /* Colore vibrante per il titolo */
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+#page2_welcome p {
+    font-size: 1.1em;
+    color: #aaaaff; /* Colore testo leggermente più chiaro */
+    margin-bottom: 25px;
+}
+
+#page2_welcome .instruction-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 1rem;
+}
+
+#page2_welcome .instruction-step {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #aaaaff;
+    align-items: flex-start;
+}
+
+#page2_welcome .instruction-step p {
+    margin: 0;
+}
+
+#page2_welcome .step-icon {
+    color: #ff3cac;
+    font-weight: bold;
+    flex-shrink: 0;
+    min-width: 1.2rem;
+}
+
+/* Stili per i bottoni nella sezione benvenuto e autenticazione */
+/* Unificato per #page2_welcome button, #page3_auth button, e .modal-content button */
+#page2_welcome button,
+#page3_auth .form-section button, /* Specifico per i button dentro form-section */
+.modal-content button {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #ff3cac, #5628b4);
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(255, 60, 172, 0.25);
+    margin-top: 0.5rem; /* Aggiunto per distanziare dai campi input */
+}
+
+#page2_welcome button:hover,
+#page3_auth .form-section button:hover,
+.modal-content button:hover {
+    background: linear-gradient(135deg, #5628b4, #3b0d99);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(255, 60, 172, 0.2);
+}
+
+
+/* Stili per l'overlay modale (per i termini e condizioni) */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 13, 13, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: #1e1e2f;
+    padding: 2rem;
+    border-radius: 1.25rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(255, 60, 172, 0.1);
+    text-align: center; /* Centra il testo all'interno del modal */
+}
+
+.modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #e0e0e0;
+    font-weight: 600;
+}
+
+.modal-content p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #aaaaff;
+}
+
+
+/* Stili specifici per la sezione Autenticazione (Page 3) */
+#page3_auth {
+    max-width: 450px; /* Più stretta per il form di login/registrazione, aumentato per leggibilità */
+    text-align: center;
+    /* Rimosso background e colore testo scuro, gestito dal main-container per coerenza tema */
+}
+
+#page3_auth h1 {
+    color: #e0e0e0; /* Testo chiaro per il titolo della pagina */
+    margin-bottom: 20px;
+    font-size: 2em; /* Più grande per il titolo principale */
+}
+
+#page3_auth label {
+    display: block;
+    text-align: left;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: #aaaaff; /* Testo chiaro per le label */
+}
+
+#page3_auth input {
+    width: 100%; /* Larghezza piena */
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #3b3b5c; /* Bordo scuro */
+    font-size: 1rem;
+    box-sizing: border-box;
+    color: #e0e0e0; /* Colore testo chiaro per input */
+    background-color: #2a2a3d; /* Sfondo scuro per input */
+}
+
+#page3_auth input:focus {
+    border-color: #ff3cac; /* Colore focus vivace */
+    outline: none;
+    background-color: #1e1e2f;
+    box-shadow: 0 0 0 3px rgba(255, 60, 172, 0.15);
+}
+
+#page3_auth hr {
+    border: 0;
+    border-top: 1px solid #3b3b5c; /* Bordo scuro per HR */
+    margin: 1.5rem 0;
+}
+
+/* Stili per la sezione Form (Page 4 - Crea/Accedi Stanza) */
+#page4_room_forms {
+    max-width: 450px;
+    padding: 1.5rem 2rem;
+    background: #1e1e2f;
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 20px rgba(255, 60, 172, 0.08);
+    color: #e0e0e0;
+}
+
+#page4_room_forms h1 { /* Per il titolo "Gestione Stanze" */
+    color: #e0e0e0;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+#page4_room_forms h2 {
+    text-align: center;
+    color: #e0e0e0;
+    margin-bottom: 1.5rem;
+}
+
+/* Stili per le tab di Crea/Accedi Stanza e Registrazione/Accesso (riutilizzati) */
+.tabs-container { /* Nuovo nome per #tabs per riuso */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3b3b5c; /* Colore bordo per tema scuro */
+}
+
+.tab-button { /* Nuovo nome per #tabs button per riuso */
+    background-color: #2a2a3d;
+    color: #e0e0e0;
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1; /* Permette ai tab di occupare spazio uguale */
+    white-space: nowrap; /* Previene il wrapping del testo */
+}
+
+.tab-button:hover {
+    background-color: #3b3b5c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+}
+
+.tab-button.active-tab {
+    background: linear-gradient(135deg, #ff3cac, #00f0ff); /* Gradiente vivace per tab attiva */
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 60, 172, 0.3), 0 0 8px rgba(0, 240, 255, 0.3);
+    border-bottom: 2px solid transparent; /* Rimuovi bordo sotto il tab attivo per evitare doppio bordo */
+    transform: translateY(0); /* Reset hover effect */
+}
+
+.form-section { /* Nuovo nome per .tab-content per riuso */
+    display: none; /* Gestito da JS */
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid #3b3b5c; /* Bordo sottile per separare dalle tab */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-section.active-tab-content { /* Aggiunto per compatibilità con ui_logic.js */
+    display: flex;
+}
+
+#page4_room_forms label, #page3_auth label {
+    font-size: 0.9rem;
+    color: #aaaaff;
+    display: block;
+    text-align: left;
+    margin-bottom: 0.25rem;
+}
+
+#page4_room_forms input, #page3_auth input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #3b3b5c;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    background-color: #2a2a3d;
+    transition: all 0.2s ease;
+    color: #e0e0e0;
+}
+
+#page4_room_forms input:focus, #page3_auth input:focus {
+    border-color: #ff3cac;
+    outline: none;
+    background-color: #1e1e2f;
+    box-shadow: 0 0 0 3px rgba(255, 60, 172, 0.15);
+}
+
+#page4_room_forms button { /* Aggiornato il selettore */
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #ff3cac, #5628b4);
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(255, 60, 172, 0.25);
+}
+
+#page4_room_forms button:hover { /* Aggiornato il selettore */
+    background: linear-gradient(135deg, #5628b4, #3b0d99);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(255, 60, 172, 0.2);
+}
+
+#formMessage, .error-message { /* Unificato con .error-message */
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #ff3c3c; /* Rosso acceso per gli errori */
+    font-weight: 600;
+    text-align: center;
+    display: none; /* Nascondi di default, mostra con JS */
+    width: 100%; /* Occupa tutta la larghezza */
+}
+
+
+/* Stili per la sezione Chat (Page 5) */
+#page5_chat {
+    max-width: 800px;
+    padding: 0;
+    margin: 2rem auto;
+    background: #1e1e2f;
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 20px rgba(255, 60, 172, 0.08);
+    color: #e0e0e0;
+}
+
+#page5_chat .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 15px 20px; /* Padding corretto per l'header */
+    border-bottom: 1px solid #3b3b5c;
+    color: #e0e0e0;
+    border-radius: 1.25rem 1.25rem 0 0; /* Arrotondamento solo in alto */
+    flex-wrap: wrap; /* Per responsività */
+    gap: 10px;
+}
+
+#page5_chat .chat-header h2 {
+    font-size: 1.2em;
+    color: #e0e0e0;
+    margin: 0;
+}
+
+#page5_chat .chat-header span {
+    font-weight: bold;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+}
+
+#page5_chat .chat-header button {
+    margin-left: 10px;
+    white-space: nowrap;
+    padding: 0.6rem 1rem; /* Padding più compatto per i bottoni nell'header */
+    background: #6c757d; /* Grigio per secondario */
+    color: white;
+    border: none;
+    border-radius: 0.5rem; /* Bordi leggermente meno arrotondati */
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+#page5_chat .chat-header button:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+#messages {
+    height: 400px; /* Aumentato leggermente per più messaggi visibili */
+    overflow-y: auto;
+    background: #0d0d0d;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin: 1rem; /* Aggiunto margine per distanziare dall'header e input */
+    font-family: 'Inter', sans-serif; /* Usiamo Inter anche qui per coerenza */
+    color: #e0e0e0;
+    border: 1px solid #3b3b5c;
+}
+
+.message { /* Stile per i singoli messaggi, rinominato da .message-block per coerenza con chat.js */
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: #1e1e2f;
+    border-radius: 0.5rem;
+    max-width: 80%; /* Messaggi più stretti */
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    color: #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Leggera ombra */
+}
+
+.message.self { /* Stile per i messaggi dell'utente */
+    background-color: #5628b4; /* Tonalità di viola per i propri messaggi */
+    align-self: flex-end; /* Allinea a destra */
+    text-align: right; /* Allinea testo a destra */
+    margin-left: auto; /* Sposta il blocco a destra */
+}
+
+.message.peer { /* Stile per i messaggi degli altri utenti */
+    background-color: #1a1a2e; /* Sfondo leggermente più scuro del container */
+    align-self: flex-start; /* Allinea a sinistra */
+    text-align: left; /* Allinea testo a sinistra */
+    margin-right: auto; /* Sposta il blocco a sinistra */
+}
+
+.message.system { /* Stile per i messaggi di sistema */
+    align-self: center;
+    background-color: #2a2a3d; /* Un colore scuro ma distinto */
+    color: #00f0ff; /* Colore più chiaro e vibrante */
+    font-style: italic;
+    font-size: 0.9em;
+    text-align: center;
+    width: 100%; /* Piena larghezza per i messaggi di sistema */
+}
+
+.message.error {
+    align-self: center;
+    background-color: #4d0000; /* Rosso scuro per errore */
+    color: #ff3c3c; /* Testo rosso acceso */
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}
+
+
+.username-color { /* Unifica il colore degli username */
+    color: #ff3cac; /* Colore vivace per gli username */
+}
+
+/* Stili per l'input del messaggio e il bottone di invio */
+.chat-input-area { /* Nuovo nome per #messageForm */
+    display: flex;
+    gap: 0.75rem;
+    margin: 0 1rem 1rem 1rem; /* Margini per allinearsi con i messaggi */
+    box-sizing: border-box;
+    width: calc(100% - 2rem); /* 100% meno i margini laterali */
+}
+
+#messageInput {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #3b3b5c;
+    background: #2a2a3d;
+    transition: all 0.2s ease;
+    color: #e0e0e0;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+}
+
+#messageInput:focus {
+    border-color: #ff3cac;
+    outline: none;
+    background: #1e1e2f;
+    box-shadow: 0 0 0 3px rgba(255, 60, 172, 0.15);
+}
+
+#sendBtn {
+    padding: 0.75rem 1.2rem;
+    background: linear-gradient(135deg, #28a745, #218838); /* Verde per il tasto invia */
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(45, 36, 77, 0.25);
+}
+
+#sendBtn:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(45, 36, 77, 0.2);
+}
+
+/* Stile bottone logout (e altri secondari nell'header) */
+#logoutBtn, #leaveRoomBtn, #infoBtn {
+    padding: 0.6rem 1rem;
+    background: #6c757d; /* Grigio scuro per i bottoni secondari */
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+#logoutBtn:hover, #leaveRoomBtn:hover, #infoBtn:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+/* Specifico per il logout se vuoi rosso */
+#logoutBtn {
+    background-color: #dc3545;
+}
+#logoutBtn:hover {
+    background-color: #c82333;
+}
+
+
+/* Modal overlay e content - Stili di base (già nel tuo CSS) */
+.modal-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 13, 13, 0.85); /* Sfondo scuro semitrasparente */
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1e1e2f; /* Sfondo scuro per il modal */
+    padding: 2rem;
+    border-radius: 1.25rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(255, 60, 172, 0.1);
+    position: relative;
+    color: #e0e0e0; /* Testo chiaro */
+}
+
+/* Info Section (for Fingerprints and Online Users) */
+.info-section {
+    background-color: #0d0d0d; /* Sfondo molto scuro per questa sezione */
+    border: 1px solid #3b3b5c;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 1rem; /* Margine per distanziare dai bordi della chat */
+    width: calc(100% - 2rem); /* Rimuovi padding e aggiungi margine */
+    box-sizing: border-box;
+    text-align: left;
+    color: #e0e0e0;
+}
+
+.info-section h4 {
+    color: #00f0ff; /* Colore vibrante per i titoli informativi */
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.info-section p {
+    font-size: 0.9em;
+    color: #aaaaff;
+    margin-bottom: 15px;
+}
+
+.info-section ul {
+    margin: 10px 0;
+    padding-left: 20px;
+    list-style-type: none; /* Rimuovi i bullet points di default */
+}
+
+.info-section li {
+    margin-bottom: 5px;
+    color: #e0e0e0;
+}
+
+
+/* Media Queries per la responsività */
+@media (max-width: 768px) {
+    .main-container {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .page-section {
+        padding: 1rem;
+    }
+
+    .chat-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px;
+    }
+
+    .chat-header h2, .chat-header button {
+        width: 100%;
+        margin-left: 0;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+    .chat-header button {
+        padding: 0.5rem 1rem;
+    }
+
+    .chat-input-area {
+        flex-direction: column;
+        gap: 5px;
+        margin: 0.5rem; /* Margini ridotti */
+        width: calc(100% - 1rem);
+    }
+
+    .chat-input-area button {
+        width: 100%;
+    }
+
+    .form-section {
+        width: calc(100% - 2rem);
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    #messages {
+        height: 300px; /* Ridotto per schermi più piccoli */
+        margin: 0.5rem;
+        width: calc(100% - 1rem);
+    }
+
+    .message {
+        max-width: 95%; /* Messaggi più larghi sui piccoli schermi */
+    }
+
+    .info-section {
+        margin: 0.5rem;
+        width: calc(100% - 1rem);
+    }
+}

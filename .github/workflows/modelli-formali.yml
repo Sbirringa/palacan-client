@@ -1,0 +1,118 @@
+# .github/workflows/modelli-formali.yml  [palacan-pq6a]
+#
+# Modelli formali di Palacan (formale/README.md): ProVerif dimostra le proprieta' della parte post-quantum
+# (busta ML-KEM dentro Olm, firma ibrida ed25519 + ML-DSA-65). Ogni risultato deve essere quello atteso
+# (formale/proverif/verifica.py): una proprieta' non piu' dimostrata, o un attacco che il modello non vede piu',
+# fanno diventare rossa la CI. Nessun segreto, nessun accesso alla produzione.
+name: Modelli formali
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "formale/**"
+      - ".github/workflows/modelli-formali.yml"
+      - "crypto/palacan-crypto/src/pq.rs"
+      - "crypto/palacan-crypto/src/firma_pq.rs"
+      - "crypto/palacan-crypto/src/formato_pq.rs"  # [palacan-pq6b]
+      - "crypto/palacan-crypto/tests/proprieta_pq.rs"
+      - "frontend/my-react-app/vite-project/src/utils/bustePq.js"
+      - "frontend/my-react-app/vite-project/src/utils/chiaviPq.js"
+      - "frontend/my-react-app/vite-project/src/utils/firmaPq.js"
+  pull_request:
+    paths:
+      - "formale/**"
+      - "crypto/palacan-crypto/src/formato_pq.rs"  # [palacan-pq6b]
+      - "crypto/palacan-crypto/tests/proprieta_pq.rs"
+      - ".github/workflows/modelli-formali.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: modelli-formali-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  proverif:
+    name: ProVerif (protocollo post-quantum)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14"
+      - name: Pacchetti di sistema per ProVerif
+        # [palacan-pq6a] elenco dei pacchetti aggiornato prima (senza, apt cercava versioni gia' tolte dal mirror: 404)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q libgtk2.0-dev
+      - name: ProVerif
+        run: |
+          opam install -y proverif
+          opam exec -- proverif -help 2>&1 | head -1 || true
+      - name: Verifica dei modelli
+        run: opam exec -- python3 formale/proverif/verifica.py
+
+  # [palacan-pq6b] Kani dimostra i formati post-quantum sul codice Rust VERO (src/formato_pq.rs, lo stesso file che
+  # va online): per TUTTI gli input entro i limiti scritti nelle dimostrazioni, non per un campione.
+  # Un gruppo di dimostrazioni per macchina (ognuna ha la sua memoria): un gruppo che cade si vede per nome, e il log
+  # completo resta scaricabile (artifact "kani-<gruppo>").
+  kani:
+    name: Kani (${{ matrix.gruppo }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - gruppo: busta
+            filtro: busta_divisa_senza_panico_e_ricomposta_identica
+            totale: 1
+          - gruppo: contesto
+            filtro: contesto_valido_senza_separatore
+            totale: 1
+          - gruppo: testo-qualsiasi
+            filtro: testo_qualsiasi_senza_panico_e_lettura_unica
+            totale: 1
+          - gruppo: testo-ibrido
+            filtro: testo_ibrido_lettura_unica
+            totale: 1
+    steps:
+      - uses: actions/checkout@v6
+      - name: Kani 0.68.0
+        uses: model-checking/kani-github-action@v1
+        with:
+          kani-version: "0.68.0"
+          command: "cargo-kani --version"
+      - name: Dimostrazioni (${{ matrix.totale }} devono reggere)
+        working-directory: formale/kani
+        # una alla volta, al massimo 20 minuti per ogni dimostrazione; a video solo le righe utili
+        run: |
+          set -o pipefail
+          cargo kani --harness "${{ matrix.filtro }}" -Z unstable-options --harness-timeout 20m 2>&1 \
+            | tee kani.log | grep -E "Checking harness|VERIFICATION|Verification Time|Complete -|FAILURE|error|size of program|variables,"
+          grep -E "Complete - ${{ matrix.totale }} successfully verified harnesses, 0 failures, ${{ matrix.totale }} total" kani.log
+      - name: Log completo di Kani
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: kani-${{ matrix.gruppo }}
+          path: formale/kani/kani.log
+          retention-days: 14
+
+  # [palacan-pq6b] le prove per proprieta' devono SCOPRIRE errori veri introdotti apposta (formale/mutanti)
+  mutanti:
+    name: Mutanti (le prove scoprono gli errori)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Prove per proprieta'
+        working-directory: crypto/palacan-crypto
+        run: cargo test --locked --test proprieta_pq
+      - name: Mutanti
+        run: python3 formale/mutanti/prova_mutanti.py

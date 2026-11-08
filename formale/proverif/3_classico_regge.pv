@@ -1,0 +1,76 @@
+(* =====================================================================================================================
+   Palacan - modello formale 3: se ML-KEM e ML-DSA fossero rotti, regge comunque Olm               [palacan-pq6a]
+
+   La parte post-quantum AGGIUNGE protezione e non ne toglie: anche se un giorno si scoprisse un difetto in ML-KEM-768
+   o ML-DSA-65 (qui: chiavi segrete post-quantum di Bob note all'attaccante fin dall'inizio), la chiave di stanza resta
+   protetta da Olm (X25519), come prima di PQ4.
+   Domande:
+     - rk resta segreta                                    -> atteso: VERO
+     - la consegna avviene davvero (il modello non e' vuoto) -> atteso: raggiungibile
+   ===================================================================================================================== *)
+
+free c: channel.
+
+type key.
+type skey.
+type pkey.
+type G.
+type exponent.
+
+const g: G [data].
+fun dh(G, exponent): G.
+equation forall x: exponent, y: exponent; dh(dh(g, x), y) = dh(dh(g, y), x).
+
+fun olm(G, G, G): key.
+
+fun aenc(bitstring, key, bitstring): bitstring.
+reduc forall m: bitstring, k: key, ad: bitstring; adec(aenc(m, k, ad), k, ad) = m.
+
+fun kempk(skey): pkey.
+fun kemct(pkey, bitstring): bitstring.
+fun kemss(pkey, bitstring): key.
+reduc forall sk: skey, r: bitstring; kemdec(sk, kemct(kempk(sk), r)) = kemss(kempk(sk), r).
+
+fun kdf(key, pkey, bitstring, bitstring): key.
+fun contesto(bitstring, G, bitstring, G): bitstring.
+
+fun k2b(key): bitstring [data].
+
+free A, B: bitstring.
+free vuoto: bitstring.
+free rk: key [private].
+
+event Consegnata(key).
+
+query attacker(rk).
+query event(Consegnata(rk)).
+
+let Alice(ia: exponent, ikB: G, pkq: pkey) =
+  (* OTK di Bob dal server, senza firma; chiave ML-KEM di Bob nota (qui comunque rotta) *)
+  in(c, otkB: G);
+  new ea: exponent;
+  new r: bitstring;
+  let ct = kemct(pkq, r) in
+  let cx = contesto(A, dh(g, ia), B, ikB) in
+  let busta = (ct, aenc(k2b(rk), kdf(kemss(pkq, r), pkq, ct, cx), cx)) in
+  let k = olm(dh(otkB, ia), dh(ikB, ea), dh(otkB, ea)) in
+  out(c, (dh(g, ea), aenc(busta, k, vuoto))).
+
+let Bob(ib: exponent, otkb: exponent, kemsk: skey, ikA: G) =
+  in(c, (eA: G, cifrato: bitstring));
+  let k = olm(dh(ikA, otkb), dh(eA, ib), dh(eA, otkb)) in
+  let (ct: bitstring, sigillo: bitstring) = adec(cifrato, k, vuoto) in
+  let cx = contesto(A, ikA, B, dh(g, ib)) in
+  let k2b(x: key) = adec(sigillo, kdf(kemdec(kemsk, ct), kempk(kemsk), ct, cx), cx) in
+  event Consegnata(x).
+
+process
+  new ia: exponent;
+  new ib: exponent;
+  new otkb: exponent;
+  new kemsk: skey;
+  out(c, (dh(g, ia), dh(g, ib), dh(g, otkb), kemsk));  (* ML-KEM rotto: la sua chiave segreta e' pubblica *)
+  (
+    (! Alice(ia, dh(g, ib), kempk(kemsk)))
+  | (! Bob(ib, otkb, kemsk, dh(g, ia)))
+  )

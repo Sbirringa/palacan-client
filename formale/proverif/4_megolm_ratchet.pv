@@ -1,0 +1,131 @@
+(* =====================================================================================================================
+   Palacan - modello formale 4: il ratchet di Megolm (chiave della chat) e la rotazione (L3a/L3b)   [palacan-l6] [palacan-l6c]
+
+   Cosa modella (vodozemac, sessioni di gruppo; frontend src/olmService.js e App.jsx per la rotazione):
+     - una sessione Megolm ha uno stato R; il passo del ratchet e' a senso unico (R(i+1) = h(R(i)), HMAC-SHA256);
+       il messaggio i si cifra con una chiave ricavata da R(i) e si FIRMA con la chiave ed25519 della sessione, che
+       ha solo il mittente (chi riceve ha la chiave pubblica);
+     - la chiave della sessione arriva ai destinatari dentro Olm (qui: canale privato; Olm e la busta ML-KEM sono
+       dimostrati nei modelli 1-3);
+     - rotazione (L3a: 100 messaggi o 7 giorni; L3b: un dispositivo sparisce): sessione nuova, stato e chiave di
+       firma nuovi, condivisa solo con i dispositivi rimasti.
+   Attaccante: rete e server (Dolev-Yao). In FASE 1 ruba:
+     - sessione A: una fotografia dello stato del MITTENTE all'indice 2 (per esempio dalla memoria);
+     - sessione B: un dispositivo DESTINATARIO, che conserva la sessione dall'indice in cui l'ha ricevuta (0).
+   Domande:
+     - a1 (inviato PRIMA, sessione A) resta segreto            -> VERO  (segretezza in avanti del ratchet)
+     - a3 (inviato DOPO, stessa sessione A) si legge            -> FALSO (attacco: per questo serve la rotazione)
+     - a4 (DOPO la rotazione) resta segreto                     -> VERO
+     - b1 (sessione B, gia' sul dispositivo rubato) si legge    -> FALSO (limite dichiarato: la cronologia sta sui
+                                                                         dispositivi che l'hanno ricevuta)
+     - b4 (dopo la rotazione L3b, che esclude il dispositivo)   -> VERO
+     - chi ha rubato un destinatario NON scrive a nome del mittente (firma della sessione)   -> VERO
+     - SENZA la firma (solo la chiave del ratchet) potrebbe farlo                           -> FALSO (attacco)
+       (sessione C, senza fasi: il destinatario e' in mano all'attaccante fin dall'inizio, cosi' ProVerif
+        ricostruisce la traccia dell'attacco passo per passo)
+     - la consegna dopo la rotazione avviene (modello non vuoto)                            -> raggiungibile
+   ===================================================================================================================== *)
+
+free c: channel.
+free olmB: channel [private].   (* Olm verso i destinatari della sessione B, compreso il dispositivo che sara' rubato *)
+free olmB2: channel [private].  (* Olm verso i soli dispositivi rimasti, dopo la rotazione *)
+
+type key.
+type skey.
+type pkey.
+
+fun h(key): key.     (* passo del ratchet Megolm: a senso unico *)
+fun mk(key): key.    (* chiave del messaggio ricavata dallo stato *)
+
+fun senc(bitstring, key): bitstring.
+reduc forall m: bitstring, k: key; sdec(senc(m, k), k) = m.
+
+fun pk(skey): pkey.
+fun sign(bitstring, skey): bitstring.
+reduc forall m: bitstring, s: skey; checksign(sign(m, s), pk(s)) = m.
+
+free a1, a3, a4, b1, b4, k1: bitstring [private].
+
+event InviatoB(bitstring).
+event RicevutoB(bitstring).
+event RicevutoSoloMac(bitstring).
+event InviatoC(bitstring).
+
+query attacker(a1) phase 1.
+query attacker(a3) phase 1.
+query attacker(a4) phase 1.
+query attacker(b1) phase 1.
+query attacker(b4) phase 1.
+query x: bitstring; event(RicevutoB(x)) ==> event(InviatoB(x)).
+query x: bitstring; event(RicevutoSoloMac(x)) ==> event(InviatoC(x)).
+query event(RicevutoB(b4)).
+
+(* sessione A: fotografia dello stato del mittente all'indice 2, poi rotazione *)
+let SessioneA(sA: skey) =
+  new r0: key;
+  let c1 = senc(a1, mk(h(r0))) in
+  out(c, (c1, sign(c1, sA)));
+  phase 1;
+  out(c, h(h(r0)));                       (* lo stato all'indice 2 finisce all'attaccante *)
+  let c3 = senc(a3, mk(h(h(h(r0))))) in    (* messaggio 3, stessa sessione *)
+  out(c, (c3, sign(c3, sA)));
+  new r0n: key;                           (* rotazione: stato nuovo, firma nuova *)
+  new sAn: skey;
+  let c4 = senc(a4, mk(h(r0n))) in
+  out(c, (c4, sign(c4, sAn))).
+
+(* sessione B: un destinatario viene rubato; L3b: la sessione nuova non arriva piu' a quel dispositivo *)
+let SessioneB(sB: skey) =
+  new q0: key;
+  (
+    (! out(olmB, (q0, pk(sB))))
+  | (
+      let d1 = senc(b1, mk(h(q0))) in
+      event InviatoB(b1);
+      out(c, (d1, sign(d1, sB)));
+      phase 1;
+      out(c, q0);                         (* il dispositivo rubato aveva la sessione dall'indice 0 *)
+      new p0: key;
+      new sB2: skey;
+      (
+        (! out(olmB2, (p0, pk(sB2))))
+      | (let e1 = senc(b4, mk(h(p0))) in event InviatoB(b4); out(c, (e1, sign(e1, sB2))))
+      )
+    )
+  ).
+
+(* destinatario onesto: accetta solo messaggi firmati con la chiave della sessione *)
+let Ricevitore(q: key, p: pkey) =
+  in(c, (x: bitstring, s: bitstring));
+  if checksign(s, p) = x then
+  let m = sdec(x, mk(h(q))) in
+  event RicevutoB(m).
+
+(* un destinatario SENZA il controllo della firma: gli basta la chiave del ratchet *)
+let RicevitoreSoloMac(q: key) =
+  in(c, (x: bitstring, s: bitstring));
+  let m = sdec(x, mk(h(q))) in
+  event RicevutoSoloMac(m).
+
+(* sessione C (controesempio, senza fasi): la chiave del ratchet e' gia' dell'attaccante (destinatario rubato);
+   il mittente firma, ma chi non controlla la firma accetta anche un messaggio scritto dall'attaccante *)
+let SessioneC(sC: skey) =
+  new w0: key;
+  out(c, w0);
+  (
+    (! RicevitoreSoloMac(w0))
+  | (let f1 = senc(k1, mk(h(w0))) in event InviatoC(k1); out(c, (f1, sign(f1, sC))))
+  ).
+
+process
+  new sA: skey;
+  new sB: skey;
+  new sC: skey;
+  out(c, (pk(sA), pk(sB), pk(sC)));
+  (
+    SessioneA(sA)
+  | SessioneB(sB)
+  | (in(olmB, (q: key, p: pkey)); ((! Ricevitore(q, p)) | (phase 1; ! Ricevitore(q, p))))
+  | SessioneC(sC)
+  | (phase 1; in(olmB2, (q: key, p: pkey)); ! Ricevitore(q, p))
+  )

@@ -1,0 +1,104 @@
+(* =====================================================================================================================
+   Palacan - modello formale 1: "raccogli ora, decifra dopo" (harvest now, decrypt later)        [palacan-pq6a]
+
+   Cosa modella (vedi frontend src/utils/bustePq.js, chiaviPq.js e crypto/palacan-crypto/src/pq.rs):
+     - Alice manda a un dispositivo di Bob una chiave di stanza (Megolm) dentro un messaggio Olm (X25519, 3DH);
+     - DENTRO Olm la chiave viaggia in una "busta" ML-KEM-768: incapsulamento verso la chiave post-quantum di Bob,
+       chiave della busta = HKDF(segreto ML-KEM; chiave pubblica, ciphertext, contesto), AEAD con il contesto come dati
+       autenticati; contesto = mittente | curva del mittente | destinatario | curva del destinatario;
+     - la chiave ML-KEM di Bob arriva dal SERVER (qui: dall'attaccante) con la firma ed25519 del dispositivo, verificata
+       con la chiave ed25519 di Bob nota ad Alice (imparata via Olm, TOFU);
+     - la chiave usa e getta (OTK) di Bob arriva dal server SENZA firma (come oggi in Palacan).
+   Attaccante: controlla la rete e il server (Dolev-Yao), oggi senza computer quantistico (fase 0). In FASE 1 arriva il
+   computer quantistico: TUTTI i segreti classici diventano noti (logaritmi discreti X25519 di identita', OTK ed
+   effimere; chiavi di firma ed25519). Le chiavi ML-KEM restano sicure.
+   Domande:
+     - rk  (chiave di stanza nella busta ML-KEM)  resta segreta anche in fase 1        -> atteso: VERO
+     - rk2 (la stessa cosa SENZA busta, solo Olm) in fase 1 si scopre                 -> atteso: FALSO (attacco trovato)
+     - la consegna avviene davvero (il modello non e' vuoto)                          -> atteso: raggiungibile
+   ===================================================================================================================== *)
+
+free c: channel.
+
+type key.
+type skey.
+type pkey.
+type G.
+type exponent.
+
+(* --- X25519 (Diffie-Hellman) --- *)
+const g: G [data].
+fun dh(G, exponent): G.
+equation forall x: exponent, y: exponent; dh(dh(g, x), y) = dh(dh(g, y), x).
+
+(* --- Olm: chiave di sessione dalla 3DH (identita' A x OTK B, effimera A x identita' B, effimera A x OTK B) --- *)
+fun olm(G, G, G): key.
+
+(* --- AEAD (XChaCha20-Poly1305 nella busta, AES/HMAC in Olm): cifratura autenticata con dati associati --- *)
+fun aenc(bitstring, key, bitstring): bitstring.
+reduc forall m: bitstring, k: key, ad: bitstring; adec(aenc(m, k, ad), k, ad) = m.
+
+(* --- ML-KEM-768 --- *)
+fun kempk(skey): pkey.
+fun kemct(pkey, bitstring): bitstring.
+fun kemss(pkey, bitstring): key.
+reduc forall sk: skey, r: bitstring; kemdec(sk, kemct(kempk(sk), r)) = kemss(kempk(sk), r).
+
+(* --- HKDF della busta: legata a segreto, chiave pubblica, ciphertext e contesto (pq.rs, chiave_busta) --- *)
+fun kdf(key, pkey, bitstring, bitstring): key.
+fun contesto(bitstring, G, bitstring, G): bitstring.
+
+(* --- ed25519 --- *)
+fun edpk(skey): pkey.
+fun edsign(bitstring, skey): bitstring.
+reduc forall m: bitstring, sk: skey; edcheck(edsign(m, sk), edpk(sk)) = m.
+
+fun pk2b(pkey): bitstring [data].
+fun k2b(key): bitstring [data].
+
+free A, B: bitstring.
+free vuoto, soloOlm: bitstring.
+free rk: key [private].
+free rk2: key [private].
+
+event Consegnata(key).
+
+query attacker(rk) phase 1.
+query attacker(rk2) phase 1.
+query event(Consegnata(rk)).
+
+let Alice(ia: exponent, ikB: G, edpkB: pkey) =
+  (* dal server: OTK di Bob (senza firma) e chiave ML-KEM di Bob (firmata ed25519) *)
+  in(c, (otkB: G, pkq: pkey, firma: bitstring));
+  if edcheck(firma, edpkB) = pk2b(pkq) then
+  new ea: exponent;
+  new r: bitstring;
+  let ct = kemct(pkq, r) in
+  let cx = contesto(A, dh(g, ia), B, ikB) in
+  let busta = (ct, aenc(k2b(rk), kdf(kemss(pkq, r), pkq, ct, cx), cx)) in
+  let k = olm(dh(otkB, ia), dh(ikB, ea), dh(otkB, ea)) in
+  out(c, (dh(g, ea), aenc(busta, k, vuoto), aenc(k2b(rk2), k, soloOlm)));
+  phase 1;
+  out(c, ea).  (* computer quantistico: anche l'effimera si ricava dalla chiave pubblica *)
+
+let Bob(ib: exponent, otkb: exponent, kemsk: skey, ikA: G) =
+  in(c, (eA: G, cifrato: bitstring, altro: bitstring));
+  let k = olm(dh(ikA, otkb), dh(eA, ib), dh(eA, otkb)) in
+  let (ct: bitstring, sigillo: bitstring) = adec(cifrato, k, vuoto) in
+  let cx = contesto(A, ikA, B, dh(g, ib)) in
+  let k2b(x: key) = adec(sigillo, kdf(kemdec(kemsk, ct), kempk(kemsk), ct, cx), cx) in
+  event Consegnata(x).
+
+process
+  new ia: exponent;
+  new ib: exponent;
+  new otkb: exponent;
+  new edskB: skey;
+  new kemsk: skey;
+  (* pubblico (sul server): identita', OTK, chiave ML-KEM firmata, chiave ed25519 di Bob *)
+  out(c, (dh(g, ia), dh(g, ib), dh(g, otkb), kempk(kemsk), edsign(pk2b(kempk(kemsk)), edskB), edpk(edskB)));
+  (
+    (! Alice(ia, dh(g, ib), edpk(edskB)))
+  | (! Bob(ib, otkb, kemsk, dh(g, ia)))
+  | (phase 1; out(c, (ia, ib, otkb, edskB)))  (* il computer quantistico rompe tutto il classico *)
+  )

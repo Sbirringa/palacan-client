@@ -1,0 +1,549 @@
+/* ================================================================
+   PALACAN - TEMA DELL'APP (generato da genera_tema.py)
+   Attivo SOLO quando <html> ha la classe 'palacan-app' (la aggiunge
+   la Dashboard mentre e' montata). Nessuna logica toccata: traduce
+   i vecchi colori nella palette Palacan. Per disattivarlo basta non
+   importare questo file.
+   ================================================================ */
+/* caratteri serviti in locale (Fontsource): nessuna richiesta a Google Fonts */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+html.palacan-app .accent-\[\#14B8A6\] { accent-color: #9DB4FF; }
+html.palacan-app .before\:bg-\[linear-gradient\(180deg\,rgba\(255\,255\,255\,0\.25\)_0\%\,rgba\(255\,255\,255\,0\)_100\%\)\]::before { background-image: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%); }
+html.palacan-app .before\:bg-\[linear-gradient\(180deg\,rgba\(255\,255\,255\,0\.7\)_0\%\,rgba\(255\,255\,255\,0\)_100\%\)\]::before { background-image: linear-gradient(180deg, rgba(243,241,236,0.045) 0%, rgba(243,241,236,0) 100%); }
+html.palacan-app .bg-\[\#14B8A6\] { background-color: #F3F1EC; }
+html.palacan-app .bg-\[\#14B8A6\]\/10 { background-color: rgba(157,180,255,0.1); }
+html.palacan-app .bg-\[\#4FC3F7\] { background-color: #9DB4FF; }
+html.palacan-app .bg-\[\#5ED6A8\] { background-color: #9DB4FF; }
+html.palacan-app .bg-\[\#C2410C\] { background-color: #E5484D; }
+html.palacan-app .bg-\[\#EEF4F4\] { background-color: #07080E; }
+html.palacan-app .bg-\[\#F7FBFB\] { background-color: #0D0F17; }
+html.palacan-app .bg-\[\#F7FBFB\]\/40 { background-color: rgba(13,15,23,0.4); }
+html.palacan-app .bg-\[\#FCE9E0\] { background-color: rgba(255,110,100,0.1); }
+html.palacan-app .bg-\[\#FDF1E0\] { background-color: rgba(255,197,138,0.1); }
+html.palacan-app .bg-\[\#FFFFFF\] { background-color: #141621; }
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#14B8A6_0\%\,\#7F77DD_100\%\)\] { background-image: linear-gradient(135deg, #9DB4FF 0%, #F3F1EC 50%, #FFC58A 100%); }
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#1DCDB0_0\%\,\#0D9488_100\%\)\] { background-image: linear-gradient(#F3F1EC, #F3F1EC); }
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#9089E8_0\%\,\#6C5FD6_100\%\)\] { background-image: linear-gradient(135deg, #9DB4FF 0%, #C9D5FF 100%); }
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] { background-image: linear-gradient(180deg, #FBFAF6 0%, #EDEAE3 100%); }
+html.palacan-app .bg-red-50 { background-color: rgba(255,110,100,0.1); }
+html.palacan-app .bg-white { background-color: #141621; }
+html.palacan-app .border-\[\#14B8A6\] { border-color: rgba(157,180,255,0.6); }
+html.palacan-app .border-\[\#14B8A6\]\/25 { border-color: rgba(157,180,255,0.325); }
+html.palacan-app .border-\[\#14B8A6\]\/30 { border-color: rgba(157,180,255,0.39); }
+html.palacan-app .border-\[\#C2410C\]\/25 { border-color: rgba(255,110,100,0.325); }
+html.palacan-app .border-\[\#DCE6E6\] { border-color: rgba(243,241,236,0.1); }
+html.palacan-app .border-\[\#E3ECEC\] { border-color: rgba(243,241,236,0.07); }
+html.palacan-app .border-red-200 { border-color: rgba(255,110,100,0.3); }
+html.palacan-app .focus-within\:border-\[\#14B8A6\]:focus-within { border-color: rgba(157,180,255,0.6); }
+html.palacan-app .focus-within\:border-\[\#7F77DD\]\/40:focus-within { border-color: rgba(157,180,255,0.52); }
+html.palacan-app .focus-within\:ring-\[\#14B8A6\]\/20:focus-within { --tw-ring-color: rgba(157,180,255,0.2); }
+html.palacan-app .focus-within\:shadow-\[0_0_0_3px_rgba\(127\,119\,221\,0\.12\)\]:focus-within { --tw-shadow: 0 0 0 3px rgba(157,180,255,0.14); --tw-shadow-colored: 0 0 0 3px rgba(157,180,255,0.14); }
+html.palacan-app .focus\:border-\[\#14B8A6\]\/40:focus { border-color: rgba(157,180,255,0.52); }
+html.palacan-app .hover\:bg-\[\#0F766E\]:hover { background-color: #FFFFFF; }
+html.palacan-app .hover\:bg-\[\#E4EEEE\]:hover { background-color: rgba(243,241,236,0.05); }
+html.palacan-app .hover\:bg-red-100:hover { background-color: rgba(255,110,100,0.16); }
+html.palacan-app .hover\:bg-white\/50:hover { background-color: rgba(243,241,236,0.05); }
+html.palacan-app .hover\:border-\[\#14B8A6\]\/40:hover { border-color: rgba(157,180,255,0.52); }
+html.palacan-app .hover\:shadow-\[0_10px_26px_-6px_rgba\(28\,37\,48\,0\.18\)\]:hover { --tw-shadow: 0 12px 28px -10px rgba(0,0,0,0.65); --tw-shadow-colored: 0 12px 28px -10px rgba(0,0,0,0.65); }
+html.palacan-app .hover\:shadow-\[0_14px_30px_-8px_rgba\(56\,120\,212\,0\.55\)\]:hover { --tw-shadow: 0 16px 34px -12px rgba(0,0,0,0.6), 0 0 24px -10px rgba(157,180,255,0.25); --tw-shadow-colored: 0 16px 34px -12px rgba(0,0,0,0.6), 0 0 24px -10px rgba(157,180,255,0.25); }
+html.palacan-app .hover\:shadow-\[0_6px_16px_-2px_rgba\(108\,95\,214\,0\.5\)\]:hover { --tw-shadow: 0 8px 20px -4px rgba(157,180,255,0.45); --tw-shadow-colored: 0 8px 20px -4px rgba(157,180,255,0.45); }
+html.palacan-app .hover\:shadow-\[0_6px_16px_-2px_rgba\(13\,148\,136\,0\.5\)\]:hover { --tw-shadow: 0 8px 20px -4px rgba(243,241,236,0.35); --tw-shadow-colored: 0 8px 20px -4px rgba(243,241,236,0.35); }
+html.palacan-app .hover\:text-\[\#122023\]:hover { color: #F3F1EC; }
+html.palacan-app .hover\:text-\[\#14B8A6\]:hover { color: #9DB4FF; }
+html.palacan-app .hover\:text-neutral-800:hover { color: #F3F1EC; }
+html.palacan-app .placeholder\:text-\[\#8CA0A2\]::placeholder { color: #7D8094; }
+html.palacan-app .ring-\[\#0B0C11\] { --tw-ring-color: #0D0F17; }
+html.palacan-app .ring-\[\#EEF4F4\] { --tw-ring-color: rgba(157,180,255,0.5); }
+html.palacan-app .shadow-\[0_0_20px_-8px_rgba\(20\,184\,166\,0\.4\)\] { --tw-shadow: 0 0 22px -8px rgba(157,180,255,0.35); --tw-shadow-colored: 0 0 22px -8px rgba(157,180,255,0.35); }
+html.palacan-app .shadow-\[0_0_40px_-12px_rgba\(20\,184\,166\,0\.35\)\] { --tw-shadow: 0 40px 90px -30px rgba(0,0,0,0.7), 0 0 44px -16px rgba(157,180,255,0.28); --tw-shadow-colored: 0 40px 90px -30px rgba(0,0,0,0.7), 0 0 44px -16px rgba(157,180,255,0.28); }
+html.palacan-app .shadow-\[0_4px_12px_-2px_rgba\(108\,95\,214\,0\.4\)\] { --tw-shadow: 0 6px 16px -4px rgba(157,180,255,0.35); --tw-shadow-colored: 0 6px 16px -4px rgba(157,180,255,0.35); }
+html.palacan-app .shadow-\[0_4px_12px_-2px_rgba\(13\,148\,136\,0\.4\)\] { --tw-shadow: 0 6px 16px -4px rgba(243,241,236,0.25); --tw-shadow-colored: 0 6px 16px -4px rgba(243,241,236,0.25); }
+html.palacan-app .shadow-\[0_4px_16px_-4px_rgba\(28\,37\,48\,0\.12\)\] { --tw-shadow: 0 6px 18px -8px rgba(0,0,0,0.6); --tw-shadow-colored: 0 6px 18px -8px rgba(0,0,0,0.6); }
+html.palacan-app .shadow-\[0_8px_20px_-6px_rgba\(56\,120\,212\,0\.45\)\] { --tw-shadow: 0 10px 26px -10px rgba(0,0,0,0.55); --tw-shadow-colored: 0 10px 26px -10px rgba(0,0,0,0.55); }
+html.palacan-app .shadow-\[0_8px_24px_-4px_rgba\(23\,23\,43\,0\.25\)\] { --tw-shadow: 0 12px 30px -8px rgba(0,0,0,0.7); --tw-shadow-colored: 0 12px 30px -8px rgba(0,0,0,0.7); }
+html.palacan-app .text-\[\#0B2A20\] { color: #07080E; }
+html.palacan-app .text-\[\#0E7490\] { color: #9DB4FF; }
+html.palacan-app .text-\[\#0F766E\] { color: #9DB4FF; }
+html.palacan-app .text-\[\#122023\] { color: #F3F1EC; }
+html.palacan-app .text-\[\#14B8A6\] { color: #9DB4FF; }
+html.palacan-app .text-\[\#5C6D6F\] { color: #A9ACBC; }
+html.palacan-app .text-\[\#8CA0A2\] { color: #7D8094; }
+html.palacan-app .text-\[\#B45309\] { color: #FFC58A; }
+html.palacan-app .text-\[\#C2410C\] { color: #FF8F85; }
+html.palacan-app .text-neutral-500 { color: #A9ACBC; }
+html.palacan-app .text-red-500 { color: #FF8F85; }
+html.palacan-app .bg-\[\#E2685C\] { background-color: #E5484D; }
+html.palacan-app .bg-amber-50 { background-color: rgba(255,197,138,0.08); }
+html.palacan-app .bg-emerald-600 { background-color: #F3F1EC; }
+html.palacan-app .bg-zinc-100 { background-color: rgba(243,241,236,0.06); }
+html.palacan-app .border-amber-300 { border-color: rgba(255,197,138,0.4); }
+html.palacan-app .border-amber-500 { border-color: rgba(255,197,138,0.55); }
+html.palacan-app .border-amber-600\/40 { border-color: rgba(255,197,138,0.3); }
+html.palacan-app .hover\:bg-amber-100:hover { background-color: rgba(255,197,138,0.14); }
+html.palacan-app .hover\:bg-emerald-700:hover { background-color: #FFFFFF; }
+html.palacan-app .hover\:bg-zinc-100:hover { background-color: rgba(243,241,236,0.08); }
+html.palacan-app .hover\:text-zinc-700:hover { color: #F3F1EC; }
+html.palacan-app .text-amber-500 { color: #FFC58A; }
+html.palacan-app .text-amber-800 { color: #FFD9B0; }
+html.palacan-app .text-amber-900 { color: #FFE4C4; }
+html.palacan-app .text-emerald-600 { color: #9DB4FF; }
+html.palacan-app .text-emerald-700 { color: #9DB4FF; }
+html.palacan-app .text-zinc-400 { color: #7D8094; }
+html.palacan-app .text-zinc-600 { color: #A9ACBC; }
+html.palacan-app .text-zinc-900 { color: #F3F1EC; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#155E75\] { background-color: #F3F1EC; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#155E75\]\/\[0\.06\] { background-color: rgba(157,180,255,0.06); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#7A8F73\]\/10 { background-color: rgba(157,180,255,0.1); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#B85C4A\]\/10 { background-color: rgba(255,110,100,0.1); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#F2F2F3\] { background-color: #0D0F17; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-white { background-color: #141621; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .border-\[\#155E75\] { border-color: rgba(157,180,255,0.6); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .border-\[\#155E75\]\/25 { border-color: rgba(157,180,255,0.325); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .border-\[\#7A8F73\]\/25 { border-color: rgba(157,180,255,0.325); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .border-\[\#B85C4A\]\/25 { border-color: rgba(255,110,100,0.325); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .border-\[\#E4E4E7\] { border-color: rgba(243,241,236,0.1); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .border-\[\#ECECEE\] { border-color: rgba(243,241,236,0.07); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .focus\:border-\[\#155E75\]\/60:focus { border-color: rgba(157,180,255,0.78); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .hover\:bg-\[\#0E4A5C\]:hover { background-color: #FFFFFF; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .hover\:bg-\[\#155E75\]:hover { background-color: #F3F1EC; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .hover\:bg-\[\#155E75\]\/\[0\.12\]:hover { background-color: rgba(157,180,255,0.12); }
+.backdrop-blur-\[2px\].justify-start.inset-0 .hover\:text-\[\#1A1A1A\]:hover { color: #F3F1EC; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .placeholder\:text-\[\#9CA3AF\]::placeholder { color: #7D8094; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#155E75\] { color: #9DB4FF; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#155E75\]\/80 { color: #9DB4FF; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#1A1A1A\] { color: #F3F1EC; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#5C7156\] { color: #9DB4FF; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#6B7280\] { color: #A9ACBC; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#9CA3AF\] { color: #7D8094; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .text-\[\#B85C4A\] { color: #FF8F85; }
+@media (min-width: 1024px) {
+  html.palacan-app .lg\:border-\[\#DCE6E6\] { border-color: rgba(243,241,236,0.1); }
+}
+
+/* ================================================================
+   PARTE FISSA (scritta a mano)
+   ================================================================ */
+
+/* --- fondo, testo e carattere dell'app --- */
+html.palacan-app,
+html.palacan-app body,
+html.palacan-app #root,
+html.palacan-app .app-shell {
+  background-color: #07080E;
+  color: #F3F1EC;
+}
+html.palacan-app body,
+html.palacan-app .font-sans {
+  font-family: 'Geist Variable', 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+html.palacan-app .font-mono,
+html.palacan-app code,
+html.palacan-app kbd {
+  font-family: 'Geist Mono Variable', 'Geist Mono', 'IBM Plex Mono', ui-monospace, monospace;
+}
+html.palacan-app [class*="Space_Grotesk"] {
+  font-family: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+html.palacan-app ::selection { background: rgba(157,180,255,0.35); color: #F3F1EC; }
+
+/* --- contrasti: testo bianco su elementi che nel tema diventano chiari --- */
+html.palacan-app .bg-\[\#14B8A6\].text-white,
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#14B8A6_0\%\,\#7F77DD_100\%\)\].text-white,
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#14B8A6_0\%\,\#7F77DD_100\%\)\] .text-white,
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\].text-white,
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#1DCDB0_0\%\,\#0D9488_100\%\)\].text-white,
+html.palacan-app .bg-\[linear-gradient\(135deg\,\#9089E8_0\%\,\#6C5FD6_100\%\)\].text-white {
+  color: #07080E;
+}
+/* la tua bolla (luce): link e icone leggibili */
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] a { color: #2B3FA8; }
+
+/* --- i due stili scritti in linea nella Dashboard --- */
+/* area dei messaggi (background #EEF1F5): fondo Abisso con due luci lontane, come la home */
+html.palacan-app [style*="rgb(238, 241, 245)"] {
+  background: radial-gradient(60% 50% at 12% 0%, rgba(157,180,255,0.07), transparent 70%),
+              radial-gradient(50% 45% at 92% 100%, rgba(255,197,138,0.05), transparent 70%),
+              #07080E !important;
+}
+/* anello sfumato intorno al tuo avatar */
+html.palacan-app [style*="rgb(20, 184, 166) 0%, rgb(127, 119, 221) 100%"] {
+  background: linear-gradient(135deg, #9DB4FF 0%, #F3F1EC 50%, #FFC58A 100%) !important;
+  box-shadow: 0 0 14px rgba(157,180,255,0.35) !important;
+}
+
+/* --- focus: niente anello viola; ghiaccio discreto; sui campi di testo nessun anello --- */
+html.palacan-app *:focus-visible {
+  --tw-ring-color: rgba(157,180,255,0.55);
+  --tw-ring-offset-color: #07080E;
+}
+html.palacan-app input:focus-visible,
+html.palacan-app textarea:focus-visible,
+html.palacan-app [contenteditable="true"]:focus-visible {
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  outline: none;
+}
+html.palacan-app input,
+html.palacan-app textarea { caret-color: #9DB4FF; }
+html.palacan-app input::placeholder,
+html.palacan-app textarea::placeholder { color: rgba(141,143,160,0.75); }
+
+/* --- stili comuni di App.css usati dagli altri componenti --- */
+html.palacan-app .btn-primary { background: #F3F1EC; color: #07080E; border-radius: 9999px; }
+html.palacan-app .btn-primary:hover { background: #FFFFFF; }
+html.palacan-app .btn-secondary { border-color: rgba(243,241,236,0.16); background: transparent; color: #F3F1EC; border-radius: 9999px; }
+html.palacan-app .input-base,
+html.palacan-app .input-base-light { background: rgba(243,241,236,0.04); border-color: rgba(243,241,236,0.1); }
+html.palacan-app .input-base:focus,
+html.palacan-app .input-base-light:focus { border-color: rgba(157,180,255,0.55); }
+html.palacan-app .conversation-item-active { border-color: rgba(157,180,255,0.3); background: rgba(157,180,255,0.08); }
+html.palacan-app .message-bubble-self { background: #F3F1EC; color: #07080E; }
+html.palacan-app .message-bubble-peer { background: #141621; border-color: rgba(243,241,236,0.08); }
+html.palacan-app .status-chip-success { border-color: rgba(157,180,255,0.3); background: rgba(157,180,255,0.1); color: #9DB4FF; }
+html.palacan-app .glass-panel,
+html.palacan-app .surface-panel,
+html.palacan-app .surface-panel-strong { border-color: rgba(243,241,236,0.08); background-color: #0D0F17; }
+
+/* --- barre di scorrimento scure --- */
+html.palacan-app * { scrollbar-width: thin; scrollbar-color: rgba(243,241,236,0.14) transparent; }
+html.palacan-app *::-webkit-scrollbar { width: 8px; height: 8px; }
+html.palacan-app *::-webkit-scrollbar-thumb { background: rgba(243,241,236,0.12); border-radius: 8px; }
+html.palacan-app *::-webkit-scrollbar-track { background: transparent; }
+
+/* --- dentro la TUA bolla (color Luce) i testi del tema restano scuri: "Rispondi", orari, citazioni --- */
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] .text-\[\#122023\] { color: #07080E; }
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] .text-\[\#5C6D6F\] { color: #3E4152; }
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] .text-\[\#8CA0A2\] { color: #5A5D6E; }
+html.palacan-app .bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] .text-\[\#0F766E\] { color: #2B3FA8; }
+
+/* --- avatar (SVG con colore come attributo): palette armonizzata con il marchio --- */
+html.palacan-app rect[fill="#14B8A6"] { fill: #9DB4FF; }
+html.palacan-app rect[fill="#6FA8DC"] { fill: #B7C5F5; }
+html.palacan-app rect[fill="#B39DDB"] { fill: #CFC3F2; }
+html.palacan-app rect[fill="#E0B97D"] { fill: #FFC58A; }
+html.palacan-app rect[fill="#E093A8"] { fill: #F4C1CB; }
+html.palacan-app rect[fill="#7FCDCD"] { fill: #D8D6EE; }
+
+/* --- carattere impostato in linea nella Dashboard (contenitore della chat, riga ~3813)
+       e nelle iniziali degli avatar (attributo SVG): anche qui Geist --- */
+html.palacan-app [style*="BlinkMacSystemFont"] {
+  font-family: 'Geist Variable', 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif !important;
+}
+html.palacan-app svg text[font-family*="Inter"] {
+  font-family: 'Geist Variable', 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ================================================================
+   CHAT PREMIUM — viva ma silenziosa (solo aspetto, nessuna logica)
+   ATTENZIONE: qui NON si usano backdrop-filter/filter/transform persistenti su
+   contenitori: renderebbero "fixed" relativi a quel contenitore i menu interni
+   (es. Opzioni conversazione, che vive dentro l'intestazione).
+   ================================================================ */
+
+/* 1. lo spazio dietro i messaggi: frammenti lontani + due luci, fermi mentre i messaggi scorrono */
+html.palacan-app [style*="rgb(238, 241, 245)"] {
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(243,241,236,0.55), transparent 60%),
+    radial-gradient(1px 1px at 68% 9%, rgba(157,180,255,0.6), transparent 60%),
+    radial-gradient(1.4px 1.4px at 83% 64%, rgba(243,241,236,0.45), transparent 60%),
+    radial-gradient(1px 1px at 34% 77%, rgba(255,197,138,0.5), transparent 60%),
+    radial-gradient(1px 1px at 52% 42%, rgba(243,241,236,0.35), transparent 60%),
+    radial-gradient(1.2px 1.2px at 91% 27%, rgba(157,180,255,0.45), transparent 60%),
+    radial-gradient(1px 1px at 6% 58%, rgba(243,241,236,0.4), transparent 60%),
+    radial-gradient(60% 45% at 18% 0%, rgba(157,180,255,0.075), transparent 72%),
+    radial-gradient(55% 45% at 88% 100%, rgba(255,197,138,0.055), transparent 72%),
+    #07080E !important;
+  background-size: 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, 100% 100%, 100% 100%, auto !important;
+  background-attachment: fixed !important;
+}
+
+/* 2. i messaggi entrano "a fuoco" (solo all'arrivo; a fine animazione non resta nessun filtro) */
+@keyframes pa-fuoco {
+  from { filter: blur(6px); }
+  to   { filter: blur(0); }
+}
+html.palacan-app .max-w-\[88\%\].group { animation: pa-fuoco 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+
+/* 3. le bolle, come nei telefoni della home */
+html.palacan-app .max-w-\[88\%\].group {
+  overflow: visible;                             /* per la capsula delle azioni sotto la bolla */
+  padding: 10px 14px 8px;
+}
+html.palacan-app .max-w-\[88\%\].group::before { border-radius: inherit; display: none; }   /* niente riflesso lucido */
+html.palacan-app .max-w-\[88\%\].group.bg-white {                         /* altra persona: Grafite + profilo luminoso */
+  background: #161822;
+  border-color: transparent;
+  border-radius: 20px 20px 20px 6px;
+  box-shadow: inset 0 0 0 1px rgba(243,241,236,0.08), 0 12px 28px -18px rgba(0,0,0,0.9);
+}
+html.palacan-app .max-w-\[88\%\].group.bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] {  /* tu: Luce piena */
+  background: #F3F1EC;
+  color: #07080E;
+  border-radius: 20px 20px 6px 20px;
+  box-shadow: 0 14px 30px -18px rgba(243,241,236,0.35), 0 10px 24px -16px rgba(0,0,0,0.8);
+}
+html.palacan-app .max-w-\[88\%\].group:hover { transform: none; }    /* niente sobbalzo al passaggio */
+html.palacan-app .max-w-\[88\%\].group p.text-\[15px\] {
+  font-size: 14.5px; line-height: 1.55; letter-spacing: -0.005em; font-weight: 400;
+}
+html.palacan-app .max-w-\[88\%\].group .mt-0\.5.flex.justify-end .text-\[11px\] { font-size: 10.5px; letter-spacing: 0.01em; }
+
+/* 4. azioni della bolla ("Rispondi", "Elimina", reazione) e conferma di eliminazione.
+      Con il mouse: capsula di vetro scuro sotto la bolla, al passaggio.
+      Su touch (niente "passaggio"): restano dentro la bolla, con lo stesso stile. */
+html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 { gap: 2px; flex-wrap: nowrap; white-space: nowrap; }
+html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 10px;
+  font-family: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-size: 12.5px; font-weight: 500; letter-spacing: -0.005em; line-height: 1;
+  opacity: 1 !important; transform: none !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button svg { width: 13px; height: 13px; }
+html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 .bg-black\/20 {   /* conferma: stessa capsula, niente riquadro dentro */
+  background: transparent; padding: 0; gap: 2px; border-radius: 0;
+}
+html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 .bg-black\/20::before {  /* separatore sottile prima della conferma */
+  content: ''; width: 1px; height: 18px; margin: 0 4px; background: rgba(243,241,236,0.12);
+}
+@media (hover: hover) {
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 {
+    position: absolute; top: calc(100% - 6px); z-index: 30; margin: 0;
+    width: max-content; padding: 4px; border-radius: 14px;
+    background: rgba(18,20,29,0.98);
+    box-shadow: inset 0 0 0 1px rgba(243,241,236,0.1), 0 18px 36px -14px rgba(0,0,0,0.95), 0 0 0 1px rgba(0,0,0,0.4);
+    opacity: 0; pointer-events: none; transform: translateY(-3px) scale(0.98); transform-origin: top center;
+    transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2.justify-end { right: 10px; }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2.justify-start { left: 10px; }
+  html.palacan-app .max-w-\[88\%\].group:hover .mt-0\.5.gap-2,
+  html.palacan-app .max-w-\[88\%\].group:focus-within .mt-0\.5.gap-2,
+  html.palacan-app .max-w-\[88\%\].group:has(.bg-black\/20) .mt-0\.5.gap-2 {
+    opacity: 1; pointer-events: auto; transform: translateY(0) scale(1);
+  }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button { color: rgba(243,241,236,0.86); }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button:hover { background: rgba(243,241,236,0.07); color: #F3F1EC; }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button.text-red-400 { color: #FF8F85; }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button.text-red-400:hover { background: rgba(255,110,100,0.12); color: #FFB1A9; }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 .relative > button { padding: 7px; border-radius: 9999px; }
+}
+
+/* citazione dentro la bolla (quando il messaggio risponde a un altro) */
+html.palacan-app .max-w-\[88\%\].group .mb-1.border-l-2.pl-2 {
+  margin: 2px 0 8px; padding: 7px 10px 7px 11px; border-radius: 10px;
+  border-left-width: 2px; border-left-color: #9DB4FF;
+  background: rgba(157,180,255,0.08);
+}
+html.palacan-app .max-w-\[88\%\].group.bg-\[linear-gradient\(160deg\,\#5AA3F0_0\%\,\#3878D4_100\%\)\] .mb-1.border-l-2.pl-2 {
+  border-left-color: rgba(7,8,14,0.35); background: rgba(7,8,14,0.06);
+}
+html.palacan-app .max-w-\[88\%\].group .mb-1.border-l-2.pl-2 p { line-height: 1.35; }
+html.palacan-app .max-w-\[88\%\].group .mb-1.border-l-2.pl-2 p:first-child { font-size: 11px; margin-bottom: 2px; }
+html.palacan-app .max-w-\[88\%\].group .mb-1.border-l-2.pl-2 p:last-child { font-size: 12px; }
+
+/* anteprima della risposta sopra il campo di scrittura: scheda sospesa con barra spettrale */
+html.palacan-app .border-t.px-4.py-2.flex.items-center.justify-between.gap-3 {
+  width: min(48rem, calc(100% - 32px)); margin: 0 auto -6px; padding: 10px 14px;
+  border: 0 !important; border-radius: 14px 14px 0 0;
+  background: #12141D !important;
+  box-shadow: inset 0 1px 0 rgba(243,241,236,0.06), inset 1px 0 0 rgba(243,241,236,0.06), inset -1px 0 0 rgba(243,241,236,0.06);
+}
+html.palacan-app .border-t.px-4.py-2.flex.items-center.justify-between.gap-3 .border-l-2 {
+  border-left-width: 2px; border-image: linear-gradient(180deg, #9DB4FF, #FFC58A) 1; padding-left: 10px;
+}
+html.palacan-app .border-t.px-4.py-2.flex.items-center.justify-between.gap-3 p:first-child { font-size: 11.5px; font-weight: 600; }
+html.palacan-app .border-t.px-4.py-2.flex.items-center.justify-between.gap-3 button {
+  padding: 6px; border-radius: 9999px; transition: background-color 0.15s ease;
+}
+html.palacan-app .border-t.px-4.py-2.flex.items-center.justify-between.gap-3 button:hover { background: rgba(243,241,236,0.08); }
+
+/* 5. intestazione e barra di scrittura: scure e semi-trasparenti, SENZA backdrop-filter */
+html.palacan-app header.h-14.shadow-sm {
+  background: rgba(9,10,17,0.94) !important;
+  border-bottom-color: rgba(243,241,236,0.06) !important;
+  box-shadow: none;
+}
+html.palacan-app header.h-14.shadow-sm::after {                /* filo di luce spettrale */
+  content: ''; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(157,180,255,0.45), rgba(243,241,236,0.55), rgba(255,197,138,0.45), transparent);
+  opacity: 0.55;
+}
+html.palacan-app form.border-t.p-4 {
+  background: linear-gradient(180deg, rgba(7,8,14,0) 0%, #07080E 55%) !important;
+  border-top-color: transparent !important;
+}
+html.palacan-app .focus-within\:border-\[\#7F77DD\]\/40 {       /* la capsula di scrittura */
+  background: #12141E !important;
+  border-color: rgba(243,241,236,0.09) !important;
+  box-shadow: inset 0 1px 0 rgba(243,241,236,0.05), 0 14px 34px -18px rgba(0,0,0,0.9);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+html.palacan-app .focus-within\:border-\[\#7F77DD\]\/40:focus-within {
+  border-color: rgba(157,180,255,0.4) !important;
+  box-shadow: inset 0 1px 0 rgba(243,241,236,0.06), 0 0 0 3px rgba(157,180,255,0.1), 0 0 36px -8px rgba(157,180,255,0.22) !important;
+}
+html.palacan-app form.border-t.p-4 button.rounded-2xl.p-3:not(:disabled):hover {  /* invio: bagliore spettrale */
+  box-shadow: 0 0 22px -4px rgba(157,180,255,0.55), 0 0 30px -8px rgba(255,197,138,0.35);
+}
+
+/* chi ha "riduci movimento" attivo non vede animazioni */
+@media (prefers-reduced-motion: reduce) {
+  html.palacan-app .max-w-\[88\%\].group { animation: none; }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 { transition: none; }
+  html.palacan-app .max-w-\[88\%\].group .mt-0\.5.gap-2 button { transition: none; }
+}
+
+/* ================================================================
+   MENU E PANNELLI — menu account, opzioni conversazione, finestre
+   (Informazioni, Rinomina, Contatti...). Solo aspetto.
+   ================================================================ */
+
+/* sfondo dietro i pannelli laterali: piu' profondo */
+html.palacan-app .lg\:bg-black\/50 { background-color: rgba(3,4,8,0.62); }
+
+/* il pannello laterale (menu account e opzioni conversazione) */
+html.palacan-app .lg\:max-w-md.lg\:border-l {
+  background: linear-gradient(180deg, #0E1019 0%, #08090F 100%) !important;
+  border-left-color: transparent !important;
+  box-shadow: inset 1px 0 0 rgba(157,180,255,0.14), -30px 0 80px rgba(0,0,0,0.55) !important;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l > .border-b {
+  padding: 22px 22px 18px; border-bottom-color: rgba(243,241,236,0.06) !important;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l > .border-b h3 {
+  font-size: 20px; font-weight: 400; letter-spacing: -0.02em;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l > .border-b button { border-radius: 9999px; }
+
+/* le righe del menu */
+@keyframes pa-riga {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l button.rounded-2xl.px-3.py-3 {
+  position: relative; gap: 14px; padding: 11px 14px; border-radius: 16px;
+  font-size: 14.5px; font-weight: 450; letter-spacing: -0.005em;
+  transition: background-color 0.18s ease;
+  animation: pa-riga 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(1) { animation-delay: 0.04s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(2) { animation-delay: 0.08s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(3) { animation-delay: 0.12s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(4) { animation-delay: 0.16s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(5) { animation-delay: 0.2s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(6) { animation-delay: 0.24s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l .space-y-1 > button:nth-child(n+7) { animation-delay: 0.28s; }
+html.palacan-app .lg\:max-w-md.lg\:border-l button.rounded-2xl.px-3.py-3:hover { background-color: rgba(243,241,236,0.045); }
+/* freccia che scivola a destra al passaggio */
+html.palacan-app .lg\:max-w-md.lg\:border-l button.rounded-2xl.px-3.py-3::after {
+  content: '\2192'; margin-left: auto; font-size: 15px; line-height: 1;
+  color: rgba(243,241,236,0.45); opacity: 0; transform: translateX(-6px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l button.rounded-2xl.px-3.py-3:hover::after { opacity: 1; transform: none; }
+/* icone in cerchi di vetro */
+html.palacan-app .lg\:max-w-md.lg\:border-l button .h-10.w-10.rounded-full {
+  width: 38px; height: 38px;
+  background: rgba(157,180,255,0.07) !important;
+  box-shadow: inset 0 0 0 1px rgba(157,180,255,0.18);
+  color: #B9C8FF !important;
+  transition: background-color 0.18s ease, box-shadow 0.18s ease;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l button:hover .h-10.w-10.rounded-full {
+  background: rgba(157,180,255,0.13) !important;
+  box-shadow: inset 0 0 0 1px rgba(157,180,255,0.32), 0 0 18px -6px rgba(157,180,255,0.5);
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l button .h-10.w-10.rounded-full.bg-red-500\/10 {
+  background: rgba(255,110,100,0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,110,100,0.22);
+  color: #FF8F85 !important;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l button:hover .h-10.w-10.rounded-full.bg-red-500\/10 {
+  background: rgba(255,110,100,0.14) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,110,100,0.35), 0 0 18px -6px rgba(255,110,100,0.5);
+}
+/* separatore prima delle azioni pericolose */
+html.palacan-app .lg\:max-w-md.lg\:border-l .mt-4.border-t.pt-4 {
+  border-top-color: transparent !important; position: relative; margin-top: 14px; padding-top: 14px;
+}
+html.palacan-app .lg\:max-w-md.lg\:border-l .mt-4.border-t.pt-4::before {
+  content: ''; position: absolute; top: 0; left: 14px; right: 14px; height: 1px;
+  background: linear-gradient(90deg, rgba(243,241,236,0.1), rgba(243,241,236,0.03));
+}
+
+/* finestre (Informazioni, Rinomina, Contatti, ...) e fogli dal basso */
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 {
+  background: linear-gradient(180deg, #141621 0%, #0B0D14 100%) !important;
+  border-color: rgba(157,180,255,0.16) !important;
+  border-radius: 26px; padding: 26px;
+}
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 h3 { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 input,
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 textarea,
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 select {
+  background: rgba(243,241,236,0.04) !important;
+  border-color: rgba(243,241,236,0.1) !important;
+  border-radius: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 input:focus,
+html.palacan-app .rounded-3xl.border-\[\#14B8A6\]\/25.p-6 textarea:focus {
+  background: rgba(157,180,255,0.05) !important;
+  border-color: rgba(157,180,255,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(157,180,255,0.1), 0 0 28px -8px rgba(157,180,255,0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.palacan-app .lg\:max-w-md.lg\:border-l button.rounded-2xl.px-3.py-3 { animation: none; }
+  html.palacan-app .lg\:max-w-md.lg\:border-l button.rounded-2xl.px-3.py-3::after { transition: none; }
+}
+
+/* ================================================================
+   COMPONENTI IN FILE SEPARATI
+   ================================================================ */
+
+/* numero di sicurezza: pulsante "verificato" (verde) -> Luce, testo scuro */
+html.palacan-app .bg-emerald-600.text-white { color: #07080E; }
+
+/* --- attivazione aziendale (fuori dalla Dashboard: regole agganciate al pannello) --- */
+.backdrop-blur-\[2px\].justify-start.inset-0 {
+  background: rgba(5,6,11,0.55) !important;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  font-family: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#F2F2F3\].max-w-md {
+  background: linear-gradient(180deg, #0F111B 0%, #080910 100%) !important;
+  border-right-color: transparent !important;
+  box-shadow: inset -1px 0 0 rgba(157,180,255,0.3), 30px 0 90px rgba(0,0,0,0.55) !important;
+  color: #F3F1EC;
+}
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#155E75\].text-white,
+.backdrop-blur-\[2px\].justify-start.inset-0 .hover\:bg-\[\#155E75\]:hover { color: #07080E; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .bg-\[\#155E75\] { border-radius: 9999px; }
+.backdrop-blur-\[2px\].justify-start.inset-0 .hover\:bg-black\/5:hover { background-color: rgba(243,241,236,0.05); }
+.backdrop-blur-\[2px\].justify-start.inset-0 input {
+  background: rgba(243,241,236,0.04) !important; border-color: rgba(243,241,236,0.1) !important; color: #F3F1EC;
+  border-radius: 16px; caret-color: #9DB4FF;
+}
+.backdrop-blur-\[2px\].justify-start.inset-0 input:focus {
+  background: rgba(157,180,255,0.05) !important; border-color: rgba(157,180,255,0.55) !important;
+  box-shadow: 0 0 28px -8px rgba(157,180,255,0.3); outline: none;
+}
+.backdrop-blur-\[2px\].justify-start.inset-0 input::placeholder { color: rgba(141,143,160,0.6); }
+
+/* --- requisiti della password (colori scritti in linea nel componente) --- */
+[style*="color: rgb(22, 163, 74)"] { color: #C9D5FF !important; }                    /* regola soddisfatta */
+[style*="color: rgb(107, 114, 128)"] { color: rgba(243,241,236,0.55) !important; }     /* regola da soddisfare */
+[style*="background-color: rgba(22, 163, 74, 0.12)"] { background-color: rgba(157,180,255,0.16) !important; color: #9DB4FF !important; }
+[style*="background-color: rgba(107, 114, 128, 0.12)"] { background-color: rgba(243,241,236,0.06) !important; }
+
+/* --- cambio password obbligato (colori scritti in linea nel componente) --- */
+[style*="background-color: rgb(37, 99, 235)"] { background-color: #F3F1EC !important; color: #07080E !important; border-radius: 9999px !important; }
+[style*="background-color: rgb(147, 197, 253)"] { background-color: rgba(243,241,236,0.3) !important; color: #07080E !important; border-radius: 9999px !important; }
+[style*="background-color: rgba(37, 99, 235, 0.1)"] { background-color: rgba(157,180,255,0.12) !important; color: #9DB4FF !important; }
+

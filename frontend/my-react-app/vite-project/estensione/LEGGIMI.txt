@@ -1,0 +1,38 @@
+[palacan-l1d] Palacan Verifica - estensione per Chrome, Edge e Brave
+
+A cosa serve
+  Chi controlla il server di un'app web puo' mandare a un singolo utente una versione modificata del codice (per
+  esempio una che legge i messaggi prima di cifrarli). Questa estensione controlla, a ogni apertura di Palacan, che
+  ogni file caricato dalla pagina sia esattamente quello pubblicato e FIRMATO con la chiave di rilascio di Palacan
+  (ed25519 + ML-DSA-65). La chiave pubblica e' dentro l'estensione: il server non la puo' cambiare.
+
+L'icona
+  verde  (segno di spunta)  tutto coincide con il codice firmato;
+  rosso  (!)                qualcosa NON coincide: non scrivere niente e avvisa chi gestisce Palacan;
+  grigio (...)              controllo in corso, oppure non completato (per esempio sei offline).
+  Clic sull'icona: il motivo, il commit e il numero di rilascio.
+
+Cosa controlla
+  - la firma dell'elenco delle impronte (/rilascio/palacan-impronte.sig) con la chiave fissata nell'estensione;
+  - che il numero di rilascio non sia piu' basso dell'ultimo gia' visto (nessun ritorno a versioni vecchie);
+  - l'impronta SHA-256 della pagina e di ogni file che la pagina carica dal sito, anche dopo, mentre la usi;
+  - lo script di servizio (sw.js) registrato dal sito;
+  - che la protezione CSP della pagina permetta di eseguire solo file del sito (niente codice in linea o da altri siti).
+
+Cosa NON fa
+  Non legge i tuoi messaggi ne' il contenuto delle pagine, non vede altri siti (permessi: solo il sito di Palacan e
+  la memoria dell'estensione), non manda niente a nessuno.
+
+Limiti dichiarati
+  - controlla le pagine aperte DOPO averla installata; la prima versione vista fa da riferimento per i numeri;
+  - i file si riscaricano dalla cache del browser: se un file non e' in cache viene riscaricato, e un server
+    malevolo che sapesse distinguere le due richieste potrebbe rispondere in modo diverso. L'elenco, la firma e
+    sw.js li scarica l'estensione stessa, fuori dalla pagina;
+  - i file caricati dentro un worker non sono visti (oggi Palacan non ne usa);
+  - protegge chi la installa; per tutti gli altri resta la verifica pubblica (scripts/verificaSito.mjs).
+
+Installazione (versione di prova, "non pacchettizzata")
+  1. nella cartella del frontend:  node scripts/preparaEstensione.mjs   (crea la cartella estensione-pronta)
+  2. Chrome: chrome://extensions  (Edge: edge://extensions)  -> attiva "Modalita' sviluppatore"
+  3. "Carica estensione non pacchettizzata" -> scegli la cartella estensione-pronta
+  4. fissa l'icona nella barra e apri Palacan.

@@ -1,0 +1,30 @@
+Palacan - client and cryptography source code
+Copyright (c) 2026 Palacan. All rights reserved.
+
+"Palacan" is the name under which the author of this software publishes it and holds all rights to it
+(the "Copyright Holder").
+
+This code is published ONLY so that anyone can read it and verify that the Palacan website and apps do what
+they claim, in particular end-to-end encryption.
+
+You MAY:
+  - read the code, download it and build it on your own computer, solely to verify it and to compare it with
+    the published website or apps;
+  - perform security research on it and responsibly disclose any vulnerabilities you find
+    (see "Reporting a vulnerability" in README.md).
+
+Without the Copyright Holder's prior written permission you may NOT:
+  - copy or modify the code for any other purpose;
+  - distribute, republish or sublicense it, in whole or in part;
+  - use it, in whole or in part, in other products or services;
+  - operate instances or services based on it;
+  - create derivative works;
+  - use it for any commercial purpose;
+  - use it to train or improve artificial intelligence or machine learning systems.
+
+Forking within GitHub is allowed only to the extent required by the GitHub Terms of Service and grants no other
+rights. Third-party components remain under their own licenses (for example vodozemac: Apache-2.0; npm and Rust
+dependencies: the license stated by each). No trademark rights in the name "Palacan" are granted.
+
+The code is provided "as is", without warranty of any kind; to the maximum extent permitted by law, the Copyright
+Holder is not liable for any damage arising from it.

@@ -1,0 +1,7 @@
+[palacan-l1c] Firma dell'elenco delle impronte
+
+Qui, al momento della pubblicazione, strumenti/pubblica_frontend.py scrive palacan-impronte.sig: la firma (ed25519 +
+ML-DSA-65) dell'elenco delle impronte della build, fatta con la chiave di rilascio che resta solo sul PC di chi
+pubblica. Il Dockerfile copia questa cartella sul sito (/rilascio/). La firma NON va nel repository (.gitignore):
+cambia a ogni pubblicazione. Si verifica con scripts/verificaSito.mjs e con la chiave pubblica in
+sicurezza/chiave-rilascio-pubblica.json.

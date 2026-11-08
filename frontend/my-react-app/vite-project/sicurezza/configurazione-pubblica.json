@@ -1,0 +1,8 @@
+{
+  "_leggimi": "[palacan-l1b] Valori PUBBLICI della build del frontend (sicurezza/configurazione.mjs). Vite li scrive comunque nel JavaScript che il sito manda a chiunque: non sono segreti e non possono esserlo. Stanno qui perche' chiunque, CI compresa, possa rifare la stessa build e confrontarla con il sito. VITE_PICKLE_KEY serve solo per compatibilita' (fase 9a) e NON va mai cambiata. Mai segreti veri in questo file.",
+  "valori": {
+    "VITE_API_URL": "https://my-chat-backend-app-vittorio.fly.dev",
+    "VITE_VAPID_PUBLIC_KEY": "BLtzI3_8VeuBjmxbSuZXpQQ2LZ92I6XVp7TnyZJs70rlu0h04Y2y7njiYfSZrCWnkEcMUidYrrAK6yxD2gFDyio",
+    "VITE_PICKLE_KEY": "DXeZTxys8FMBil0qfmOcdnWjQat21GPEo6rKCUHb734uJY9L"
+  }
+}

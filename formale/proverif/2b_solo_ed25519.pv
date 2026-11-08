@@ -1,0 +1,65 @@
+(* =====================================================================================================================
+   Palacan - modello formale 2b: perche' la sola ed25519 non basta                                [palacan-pq6a]
+
+   Confronto con il modello 2: le chiavi post-quantum ML-KEM firmate con la SOLA ed25519 (come le chiavi post-quantum
+   di Signal oggi). Con un computer quantistico la chiave di firma ed25519 di Bob si ricava dalla sua chiave pubblica
+   (qui: nota all'attaccante): l'attaccante firma una SUA chiave ML-KEM e Alice la accetta come se fosse di Bob.
+   Nello stesso modello, la firma ibrida (con la chiave ML-DSA-65 di Bob gia' nota ad Alice) regge.
+   Domande:
+     - con la sola ed25519, ogni chiave accettata e' di Bob    -> atteso: FALSO (attacco trovato)
+     - con la firma ibrida, ogni chiave accettata e' di Bob    -> atteso: VERO
+   ===================================================================================================================== *)
+
+free c: channel.
+
+type skey.
+type pkey.
+
+fun edpk(skey): pkey.
+fun edsign(bitstring, skey): bitstring.
+reduc forall m: bitstring, sk: skey; edcheck(edsign(m, sk), edpk(sk)) = m.
+
+fun mdpk(skey): pkey.
+fun mdsign(bitstring, skey): bitstring.
+reduc forall m: bitstring, sk: skey; mdcheck(mdsign(m, sk), mdpk(sk)) = m.
+
+fun kempk(skey): pkey.
+fun ibrido(bitstring, pkey, pkey, bitstring): bitstring [data].
+fun pk2b(pkey): bitstring [data].
+
+free CTX_PRECHIAVE: bitstring.
+
+event Pubblicata(pkey).
+event AccettataSoloEd(pkey).
+event AccettataIbrida(pkey).
+
+query x: pkey; event(AccettataSoloEd(x)) ==> event(Pubblicata(x)).
+query x: pkey; event(AccettataIbrida(x)) ==> event(Pubblicata(x)).
+
+let Bob(edskB: skey, mdskB: skey) =
+  new kemsk: skey;
+  let t = ibrido(CTX_PRECHIAVE, edpk(edskB), mdpk(mdskB), pk2b(kempk(kemsk))) in
+  event Pubblicata(kempk(kemsk));
+  out(c, (kempk(kemsk), edsign(t, edskB), mdsign(t, mdskB))).
+
+let AliceSoloEd(edpkB: pkey, mdpkB: pkey) =
+  in(c, (pk: pkey, fe: bitstring));
+  if edcheck(fe, edpkB) = ibrido(CTX_PRECHIAVE, edpkB, mdpkB, pk2b(pk)) then
+  event AccettataSoloEd(pk).
+
+let AliceIbrida(edpkB: pkey, mdpkB: pkey) =
+  in(c, (pk: pkey, fe: bitstring, fq: bitstring));
+  let t = ibrido(CTX_PRECHIAVE, edpkB, mdpkB, pk2b(pk)) in
+  if edcheck(fe, edpkB) = t then
+  if mdcheck(fq, mdpkB) = t then
+  event AccettataIbrida(pk).
+
+process
+  new edskB: skey;
+  new mdskB: skey;
+  out(c, (edskB, edpk(edskB), mdpk(mdskB)));  (* computer quantistico: la chiave ed25519 di Bob e' nota *)
+  (
+    (! Bob(edskB, mdskB))
+  | (! AliceSoloEd(edpk(edskB), mdpk(mdskB)))
+  | (! AliceIbrida(edpk(edskB), mdpk(mdskB)))
+  )

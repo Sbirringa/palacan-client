@@ -1,0 +1,97 @@
+# .github/workflows/modulo-crypto.yml  [palacan-vodozemac]
+#
+# Modulo crittografico palacan-crypto (vodozemac con l'interfaccia di libolm). Prove gratuite, nessun accesso alla
+# produzione: compila, prova la compatibilita' con la libolm VERA 3.2.15 nei due sensi, e verifica che il WASM
+# committato in frontend (quello che va online) sia lo stesso dei sorgenti e superi le stesse prove.
+name: Modulo crittografico
+
+on:
+  push:
+    paths:
+      - "crypto/palacan-crypto/**"
+      - "frontend/my-react-app/vite-project/src/crypto/**"
+      - ".github/workflows/modulo-crypto.yml"
+  pull_request:
+    paths:
+      - "crypto/palacan-crypto/**"
+      - "frontend/my-react-app/vite-project/src/crypto/**"
+      - ".github/workflows/modulo-crypto.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  modulo:
+    name: palacan-crypto (Rust, WASM, compatibilita' con libolm)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: crypto/palacan-crypto
+    env:
+      CARGO_TERM_COLOR: always
+      PKG_APP: ../../frontend/my-react-app/vite-project/src/crypto/pkg
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Rust stabile + target wasm32
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+          rustc --version
+          cargo --version
+
+      - name: Cache delle dipendenze Rust
+        uses: actions/cache@v5  # [palacan-reset-incrociati] v5 gira su Node 24 (v4 dava l'avviso Node 20)
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            crypto/palacan-crypto/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('crypto/palacan-crypto/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - name: Test Rust (nucleo + compatibilita' con i vettori di libolm 3.2.15)
+        run: cargo test --locked
+
+      - name: wasm-pack
+        run: npm install -g wasm-pack
+
+      - name: Compilazione per il browser dai sorgenti
+        run: wasm-pack build --release --target web --out-dir pkg --out-name palacan_crypto
+
+      - name: libolm 3.2.15 per le prove di compatibilita'
+        working-directory: crypto/palacan-crypto/compat
+        run: npm ci
+
+      - name: Prove WASM (build appena fatta) contro la libolm vera
+        run: |
+          node compat/prova_wasm.mjs
+          node compat/prova_pq_wasm.mjs  # [palacan-pq1] ML-KEM-768 e busta post-quantum
+          node compat/prova_firma_pq_wasm.mjs  # [palacan-pq5a] ML-DSA-65 e firma ibrida
+
+      - name: Il codice JS committato e' quello generato dai sorgenti
+        run: |
+          diff -u pkg/palacan_crypto.js "$PKG_APP/palacan_crypto.js"
+          diff -u pkg/palacan_crypto.d.ts "$PKG_APP/palacan_crypto.d.ts"
+
+      - name: Il WASM committato corrisponde a PROVENIENZA.txt
+        run: |
+          impronta=$(sha256sum "$PKG_APP/palacan_crypto_bg.wasm" | cut -d' ' -f1)
+          echo "SHA-256 del WASM committato: $impronta"
+          grep -q "$impronta" "$PKG_APP/PROVENIENZA.txt" || { echo "::error::PROVENIENZA.txt non corrisponde al WASM committato"; exit 1; }
+
+      - name: Prove WASM sul file che va online (src/crypto/pkg)
+        run: |
+          cp "$PKG_APP/palacan_crypto_bg.wasm" pkg/palacan_crypto_bg.wasm
+          cp "$PKG_APP/palacan_crypto.js" pkg/palacan_crypto.js
+          node compat/prova_wasm.mjs
+          node compat/prova_pq_wasm.mjs  # [palacan-pq1]
+          node compat/prova_firma_pq_wasm.mjs  # [palacan-pq5a]

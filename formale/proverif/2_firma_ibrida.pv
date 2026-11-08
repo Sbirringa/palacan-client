@@ -1,0 +1,80 @@
+(* =====================================================================================================================
+   Palacan - modello formale 2: firma ibrida ed25519 + ML-DSA-65 delle chiavi post-quantum         [palacan-pq6a]
+
+   Cosa modella (frontend src/utils/firmaPq.js, chiaviPq.js, bustePq.js; crypto/palacan-crypto/src/firma_pq.rs):
+     - testo ibrido = palacan-firma-ibrida-v1 | contesto | chiave ed25519 | impronta della chiave ML-DSA | messaggio;
+       la firma vale solo se reggono ENTRAMBE: ed25519 e ML-DSA-65 sullo STESSO testo;
+     - FASE 0 (niente computer quantistico): Bob pubblica la sua chiave ML-DSA con la PROVA DI LEGAME (firma ibrida
+       del testo palacan-pqfirma-legame-v1|utente|curva). Alice la scarica dal server (attaccante) e la accetta solo se
+       il legame regge con la chiave ed25519 di Bob che conosce (TOFU via Olm);
+     - FASE 1: la chiave di firma ed25519 di Bob diventa nota (computer quantistico). Bob pubblica chiavi ML-KEM con la
+       firma ibrida; Alice le accetta solo se la firma ibrida regge.
+   Domande:
+     - ogni chiave ML-KEM accettata con la firma IBRIDA e' davvero di Bob             -> atteso: VERO
+     - Alice accetta davvero chiavi di Bob (il modello non e' vuoto)                    -> atteso: raggiungibile
+   Il confronto con la SOLA ed25519 (come Signal oggi) e' nel modello 2b_solo_ed25519.pv.
+   ===================================================================================================================== *)
+
+free c: channel.
+
+type skey.
+type pkey.
+
+fun edpk(skey): pkey.
+fun edsign(bitstring, skey): bitstring.
+reduc forall m: bitstring, sk: skey; edcheck(edsign(m, sk), edpk(sk)) = m.
+
+fun mdpk(skey): pkey.
+fun mdsign(bitstring, skey): bitstring.
+reduc forall m: bitstring, sk: skey; mdcheck(mdsign(m, sk), mdpk(sk)) = m.
+
+fun kempk(skey): pkey.
+
+(* testo ibrido: contesto, chiave ed25519, chiave ML-DSA (la sua impronta), messaggio (firma_pq.rs, testo_ibrido) *)
+fun ibrido(bitstring, pkey, pkey, bitstring): bitstring [data].
+fun pk2b(pkey): bitstring [data].
+fun legame(bitstring): bitstring [data].
+
+free B: bitstring.
+free CTX_LEGAME, CTX_PRECHIAVE: bitstring.
+
+event Pubblicata(pkey).
+event AccettataIbrida(pkey).
+
+query x: pkey; event(AccettataIbrida(x)) ==> event(Pubblicata(x)).
+query x: pkey; event(AccettataIbrida(x)).
+
+let BobLegame(edskB: skey, mdskB: skey) =
+  let t = ibrido(CTX_LEGAME, edpk(edskB), mdpk(mdskB), legame(B)) in
+  out(c, (mdpk(mdskB), edsign(t, edskB), mdsign(t, mdskB))).
+
+let BobPrechiave(edskB: skey, mdskB: skey) =
+  new kemsk: skey;
+  let t = ibrido(CTX_PRECHIAVE, edpk(edskB), mdpk(mdskB), pk2b(kempk(kemsk))) in
+  event Pubblicata(kempk(kemsk));
+  out(c, (kempk(kemsk), edsign(t, edskB), mdsign(t, mdskB))).
+
+let Alice(edpkB: pkey) =
+  (* fase 0: chiave ML-DSA di Bob dal server, accettata solo con la prova di legame *)
+  in(c, (mdpkB: pkey, le: bitstring, lq: bitstring));
+  let t = ibrido(CTX_LEGAME, edpkB, mdpkB, legame(B)) in
+  if edcheck(le, edpkB) = t then
+  if mdcheck(lq, mdpkB) = t then
+  phase 1;
+  (* fase 1: chiave ML-KEM di Bob dal server, con la firma ibrida *)
+  in(c, (pk: pkey, fe: bitstring, fq: bitstring));
+  let tp = ibrido(CTX_PRECHIAVE, edpkB, mdpkB, pk2b(pk)) in
+  if edcheck(fe, edpkB) = tp then
+  if mdcheck(fq, mdpkB) = tp then
+  event AccettataIbrida(pk).
+
+process
+  new edskB: skey;
+  new mdskB: skey;
+  out(c, edpk(edskB));
+  (
+    (! BobLegame(edskB, mdskB))
+  | (phase 1; ! BobPrechiave(edskB, mdskB))
+  | (! Alice(edpk(edskB)))
+  | (phase 1; out(c, edskB))  (* computer quantistico: la firma ed25519 di Bob si puo' falsificare *)
+  )

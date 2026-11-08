@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Playwright (prove automatiche)
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# [palacan-l1c] firma dell'elenco: si crea a ogni pubblicazione, non va nel repository
+rilascio/*.sig
+
+# [palacan-l1d] cartella dell'estensione da caricare nel browser: si crea con scripts/preparaEstensione.mjs
+estensione-pronta/

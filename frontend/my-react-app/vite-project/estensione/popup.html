@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Palacan Verifica</title>
+<style>
+  :root { color-scheme: light dark; --verde: #1a7f37; --rosso: #cf222e; --grigio: #6e7781; }
+  body { font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; width: 340px; margin: 0; padding: 14px 16px; }
+  h1 { font-size: 14px; margin: 0 0 10px; }
+  .stato { font-weight: 600; font-size: 15px; padding: 8px 10px; border-radius: 6px; color: #fff; background: var(--grigio); }
+  .stato.verde { background: var(--verde); } .stato.rosso { background: var(--rosso); }
+  ul { padding-left: 18px; margin: 10px 0; } li { margin: 4px 0; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 10px 0 0; font-size: 12px; }
+  dt { opacity: .7; } dd { margin: 0; word-break: break-all; font-family: ui-monospace, Consolas, monospace; }
+  p.nota { font-size: 11px; opacity: .7; margin: 12px 0 0; }
+</style>
+</head>
+<body>
+<h1>Palacan Verifica</h1>
+<div id="stato" class="stato">...</div>
+<ul id="motivi"></ul>
+<dl id="dettagli"></dl>
+<p class="nota" id="nota"></p>
+<script type="module" src="popup.js"></script>
+</body>
+</html>

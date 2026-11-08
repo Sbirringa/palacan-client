@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it" class="bg-[#0C0D13]" translate="no">
+  <head>
+    <meta name="google" content="notranslate" /><!-- palacan-correzione-traduzione: il browser non traduce la pagina (React si rompe) -->
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- ✅ FIX GRAFICA MOBILE:
+         1. viewport-fit=cover gestisce i bordi/notch (iPhone/Android moderni)
+         2. user-scalable=no impedisce lo zoom fastidioso quando clicchi sugli input
+         3. maximum-scale=1 mantiene il layout fisso e pulito
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+    <!-- Colore barra di stato mobile allineato al nuovo background "ink & signal" -->
+    <meta name="theme-color" content="#0C0D13" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Palacan | Private conversations</title>
+    <!-- FIX (privacy): font Space Grotesk/Inter/IBM Plex Mono non più
+         caricati da Google Fonts - ora serviti in locale via Fontsource
+         (vedi import in main.jsx), stesso aspetto grafico, zero
+         richieste esterne a Google. -->
+      <style>html { scrollbar-gutter: stable; }</style>
+</head>
+  <!--
+    FIX: rimosso "overflow-hidden" da qui. Era la vera causa dello scroll
+    bloccato su tutte le pagine pubbliche (FAQ, Privacy, Chi siamo, ecc.):
+    essendo scritto direttamente nell'HTML statico, nessuna regola CSS/
+    Tailwind applicata dai componenti React (app.css, PublicLayout.jsx...)
+    poteva sovrascriverlo, perché il body arriva già con questa classe
+    PRIMA ancora che React monti. Il comportamento "schermo fisso, scroll
+    solo nei pannelli interni" per la dashboard chat resta comunque
+    garantito dalla classe .app-shell, applicata SOLO al contenitore della
+    chat (vedi App.jsx / Dashboard.jsx) — quindi rimuoverlo da qui non
+    tocca in alcun modo il comportamento della chat, sblocca solo lo
+    scroll di pagina ovunque .app-shell non sia applicata.
+  -->
+  <body class="bg-[#0C0D13] antialiased">
+    <script src="/errori-pagina.js"></script><!-- [palacan-l1a] avviso degli errori: file a parte, la CSP non ammette script nella pagina -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <!-- FIX (privacy): script reCAPTCHA rimosso - confermato mai
+         verificato da nessuna parte del codice, mandava solo dati
+         (incluso l'IP di ogni visitatore) a Google senza proteggere
+         nulla. -->
+  </body>
+</html>

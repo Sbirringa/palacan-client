@@ -1,0 +1,21 @@
+# formale/kani  [palacan-pq6b]
+# Pacchetto SOLO per il model checker Kani: compila lo STESSO file src/formato_pq.rs del modulo crittografico (quello
+# che va online), senza dipendenze, cosi' Kani dimostra le proprieta' dei formati post-quantum in pochi minuti.
+# Si esegue nella CI "Modelli formali" (cargo kani); in locale serve Kani installato (cargo install kani-verifier).
+[package]
+name = "palacan-formato-pq-kani"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "Apache-2.0"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
+# pacchetto a se', fuori da ogni workspace
+[workspace]

@@ -1,0 +1,5 @@
+File generati da crypto/palacan-crypto (NON modificare a mano):
+  wasm-pack build --release --target web --out-dir pkg --out-name palacan_crypto
+palacan-crypto 0.1.0, vodozemac 0.11.1, libcrux-ml-kem 0.0.11 (ML-KEM-768), libcrux-ml-dsa 0.0.11 (ML-DSA-65); formati post-quantum dimostrati con Kani  [palacan-pq6b]
+SHA-256 di palacan_crypto_bg.wasm: 44717d746ac9ea3d93b66453d137f4681455f84930213fcd2456e632cd21b4ed
+Generati il 2026-10-31 18:22

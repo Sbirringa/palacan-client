@@ -1,0 +1,6 @@
+{
+  "name": "palacan-crypto-compat",
+  "private": true,
+  "description": "Vettori e verifiche di compatibilita' con la libolm vera",
+  "dependencies": { "@matrix-org/olm": "3.2.15" }
+}

@@ -1,0 +1,44 @@
+{
+ "chiave_pickle": "chiave-di-pickle-di-prova",
+ "versione_libolm": "3.2.15",
+ "bob_identita": {
+  "curve25519": "ile98O3EAbFKqq+4W9f0ZU+IUvz3sts3oyYe6HkMyTA",
+  "ed25519": "PqdgITuGPz6vqRU3q9snvV0JtHPd7T/yhYeQiaaHfl4"
+ },
+ "bob_otk": {
+  "curve25519": {
+   "AAAAAw": "CWNYmQw41RNvT6FtgJv8pKFGYpAkAYQhMm2a9f8eYGg",
+   "AAAAAg": "IsCewBWkI+FxV9m1PLxImxRZ+Nfe8zSkzkMjqg7ptR4",
+   "AAAAAQ": "Lx+nbHOjLG3/WDg3r0iNSwyPhmqJlpYvAfvAybR3JU8"
+  }
+ },
+ "bob_pickle": "s30MT8spMMh9298N/LaWnCwk1sLj0RXGnEVgkYS+C+zwtUhhdO8Ed3K7FzguyUA6a4Vf5zff2kr7NY3GtoVVVh9yFCFVgTbPkbTCsI2sgGfa6VspivRfwNNErH0is4h15jQWCim6hKQQtgs+nNA1El4uCKALfo64gu8sbMk6bjaNkW+S2D4MeF81/eNign96Cuwr5I20uDYVqk1h1reLKLuN0CLCab0cYb7mqA7DStLawInBG+1Dwx9SrYwLOC6W/0aJ01Yo5gy3tslFTAW5DfI8SmDVc/tAN9dnEO5n20Q7hgeB0vw9CwNzZNhbNmBxxxm1rmT4i6TUxXFLWF0w1TNA8YJdpFKdhU4Rl671vVIgO4qAmZgbKGrpkeb0dPSnVK2WmqNVji2D+iX4dnkpc0Z1LtCuSa5zzd+ng54ZGyqkeTTeehweJNaUFqapFhg1DlDLqy8rCm0j8bY81inngsu9sNhpMlFEOymoNelXwZ+XCJ4CvT98HPma+v6UkFmU4Xa6wGb+QV8",
+ "alice_identita": {
+  "curve25519": "SkOcgkluKvHK+qPnpYZMoB55M8L8wuyC69Yte27ONU8",
+  "ed25519": "JjCz6dULFFsvKeTz4E1cHoLNZaXPaj2Io6pDLFzobLc"
+ },
+ "prekey_1": {
+  "type": 0,
+  "body": "AwogCWNYmQw41RNvT6FtgJv8pKFGYpAkAYQhMm2a9f8eYGgSILCZ7mHw+CYrIPWHrx6K+aMpPtHUh9KmkArP9UdCIHotGiBKQ5yCSW4q8cr6o+elhkygHnkzwvzC7ILr1i17bs41TyJPAwogeW0uduVFVkqsORIAlmIncF3MIeCHMeN1kx61SYUskmsQACIgwhvbqvms7gpsHMquxMKfK13Es2dLyZcBJBm/L82Un3yZusJMDfvdbw"
+ },
+ "prekey_2": {
+  "type": 0,
+  "body": "AwogCWNYmQw41RNvT6FtgJv8pKFGYpAkAYQhMm2a9f8eYGgSILCZ7mHw+CYrIPWHrx6K+aMpPtHUh9KmkArP9UdCIHotGiBKQ5yCSW4q8cr6o+elhkygHnkzwvzC7ILr1i17bs41TyJfAwogeW0uduVFVkqsORIAlmIncF3MIeCHMeN1kx61SYUskmsQASIwJf4wXpmbLcLVuBKau2aTPqO2coYzpIzdF0qdI7i/3TpX8L/7kVdO2EukG4k9c/W0Eb1lwUBUcNM"
+ },
+ "sessione_alice_id": "MGRaIJ1bmnH0QTaRzyXWjUdpt7igDPSs8oTm0+cQgNw",
+ "sessione_alice_pickle": "ezx+RosdI3FTOtKZ0ImMedNuGDlq6Kb4VixE1n/ckeirvyL65UfTDPZhCoW1ldeNeTHs8WE8hAJSble+K8oFvDUcx9SwLQHum2TUpz75P6lybOTJOYq/gIXVK3Wy6F2/CDui1CqjYNwX8KhK2f0JYdYkW7gu1OPLDJNnKiep9/hmc5+h7/+RRNLcrTEOllmJY2CfR70UxIA3RwsNIwN5czABEyJz+1TAdaOks6Gfj5LlOlH6YQb2YgJ484VoNAujIZV2vazUKeCyf1fKLlJoy7Vr2J7aJIPQbeikZ3JM6e4dGbeHKQ3Xv/QoKZD0wBIXedN6y5S1VxsV13di9JY7zZS47778lCSv",
+ "alice_pickle": "ZzvfpgmNUcJpqc6RnR2Y33qJt6lfyXkOOHdAH4iLOLqHvQcLXJ8TTEAXeT9jiynWGL4dusmKLkQrdUNog4Oq1naxuNStS+qnW8LfG0lZJQ3QPiHaVhVHQZVJ8VYkJu30H06DY730vzsEUjSES6uPeTJOg7AowBPXzZ6KpXEeQ2BJVJqaWUKuWxZMh2XnCkDjT3dtzYIrm9vPb/+ms71J15QxT/i0rvFubfZN4sQOmFjbIstc/hSVIQ",
+ "gruppo_id": "UOWAjTfbrDdDQ5FjJuuUjMZIfV/B7zYBOp3J4Quokgo",
+ "gruppo_chiave": "AgAAAAAUbMD9mtn5+X9bONWK3EsOLgqMJ/LCs2ZVD1ilVPHiz8F7vyQ8ujTx8rla7Gt7Ihyw+JZ3i084at4PTluQCnpbRf4A5/U4YVvFOHhBtnVk9c9It1ZaDF/vwYNfEyQG3Zizi4nnAI9aqNMb67xC3tGQxGOc7rHF7iv26TZ00xoj51DlgI0326w3Q0ORYybrlIzGSH1fwe82ATqdyeELqJIKsO9zLsLqXAHsHRQXMGMzAtvKbN5MkLWQG/3nAjhYteHZfRcmxOQ3Jwn0NWP0g07RolatorFMMJIu8xZtrPDfAA",
+ "gruppo_messaggi": [
+  "AwgAEiCrKLFeHTIZwTx7D2NY01ivKKiszcmOr0UqNtmb8vY0ZZQB/ai/WlZREoZ5AF2Gnul6Kt9RccQaKHJt86Xnm9GxtaPqcuhm5qx6WFX4Rw+LE3EGOjIwhoBSjPOJceoWCJIkbzt2VIaZDQ",
+  "AwgBEiB4szKAnW8nQMRobKDK1amwaZhJ4yf0S6pRaLDPOFstYSRm31mNI/n9UTyEk5LNPjYGkX1f/5xiiXV9ERpGH5n7e6UKO6cjDnhwrPdrPpX689VSLW7Z1fVarWd8s9wslSVVZ+0nOneZAg",
+  "AwgCEiB0t6lcKwR/34tix/hQvDC6IqmuEpX0/EYMgCWKV8xHUhatMw+H6LqIHxZegdyeJdho0HaN4hl6/qGGLbDpxEdrDvO+C74gZ5dpwaufbdnDq2F0FADPq5EogmXnQOH/hwPvx0nPECKcCw"
+ ],
+ "gruppo_uscente_pickle": "sba1CfLrEGo1PRkZ7tmsC/OeQaNWVDoYUtZyqVsMJBQmRVommKaeJ5aKFHAVHw6K796oMo3mNmvsKH0s0CWTQ0Qnh5+xN3BcK95DScaUqUNnkL+YF72wlcVYHR3TUgzm14ng5bh6A7pYT9d/BCAwtpY2beShneGPtOwY1YYjqLG6bquI4nldLAT4YydYjWHDy+E8uPLacP9cBGk/7C1cL3Gz52uMm4SSG6Q63P6bs1qem5XHKdRVp7mr4ed0yR+5VKmv+EkVudGWSoxuBKzBFwBtyup72QER5PM6J0drpYjPqFUiqs/y6tLWjzdtUsk1Q6/LxZ6nou8",
+ "gruppo_uscente_indice": 3,
+ "gruppo_esportata_1": "AQAAAAEUbMD9mtn5+X9bONWK3EsOLgqMJ/LCs2ZVD1ilVPHiz8F7vyQ8ujTx8rla7Gt7Ihyw+JZ3i084at4PTluQCnpbRf4A5/U4YVvFOHhBtnVk9c9It1ZaDF/vwYNfEyQG3ZgVVATSzgt8mzUmgIHoabPXIfStmb/PGNMQkswkUgAQ6FDlgI0326w3Q0ORYybrlIzGSH1fwe82ATqdyeELqJIK",
+ "gruppo_entrante_pickle": "od7hOHcTOfQWxC0KY7narGra9tChgKaEW0s+PFJqQeD2kMSLPzGCLYQn+nosQ7dSkuKZraWzr1pmbKWoQuBWpYSstX2/MjWNac9fwua9xJfOX9EVbiLVhH/rhekWhgMNcLGeruux1uAiuaF+MH4eoy01RR0iGiRTlgpl3xJb+kTMRSVckG4fkLKewnZqbDGPu/rbNUF9koz+WowsSA901UriNSGk8JN7YnVVy1xVDYwgO1JncY6kMT7EQBORdMrSnIbp+XJpO+0Ypylpsxy7r2t8oSfgz8jlcdULsgpjPmKTkP7vZDojvqA3ovCAMBXaG8KtSZiI9btVok5P26jBOh1pW/xZbNJsvKYrfR3a6+DNxdq6VmfYROo23Xgol9hBam6AyKsV1j7GCQzvIS//wprIMIme7UoD",
+ "firma_messaggio": "testo canonico da firmare {\"a\":1}",
+ "firma": "/1yJ9VNaxvXI1GqsxPP7B9Lmc7LPRziwW6siVBzsogmvEANJ4v4u1QYkPJkrmu2824M33BkgcywsgLQYvvkTDg"
+}

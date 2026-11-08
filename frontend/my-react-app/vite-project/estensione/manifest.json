@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Palacan Verifica",
+  "version": "1.0.0",
+  "description": "Controlla a ogni apertura che il sito di Palacan sia esattamente il codice pubblicato e firmato.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage"],
+  "host_permissions": ["https://my-chat-frontend-app-vittorio.fly.dev/*"],
+  "background": { "service_worker": "sfondo.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["https://my-chat-frontend-app-vittorio.fly.dev/*"],
+      "js": ["pagina.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": { "default_title": "Palacan Verifica", "default_popup": "popup.html" },
+  "content_security_policy": { "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'" }
+}
