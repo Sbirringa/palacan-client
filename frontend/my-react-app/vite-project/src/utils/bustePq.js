@@ -46,6 +46,43 @@ function senzaPqConsentito() {
 }
 const testo = (v) => (v == null ? '' : String(v).trim());
 
+// [palacan-cl2h] Data delle chiavi ML-KEM. Ogni chiave porta il momento di creazione, firmato dal dispositivo (testo v2):
+// chi scrive rifiuta le chiavi piu' vecchie di 21 giorni (tre rinnovi, CL2c) e quelle datate nel futuro. Cosi' un server
+// complice di chi ha rubato lo stato non puo' riproporre per sempre una chiave vecchia rubata (modello formale 6).
+// Le chiavi senza data (formato v1, di prima) si accettano fino al 10 dicembre 2026, poi mai piu': alla prima apertura
+// ogni dispositivo le ripubblica con la data. Un dispositivo spento piu' a lungo riceve le chiavi di stanza quando si
+// riapre (le chiede ai membri, N5). Nei test vecchi (dentro vitest) i controlli sulla data restano spenti.
+export const ETA_MAX_PRECHIAVE_MS = 21 * 24 * 3600 * 1000;
+export const ANTICIPO_MAX_PRECHIAVE_MS = 24 * 3600 * 1000;
+export const FINE_PRECHIAVI_V1_MS = Date.UTC(2026, 11, 10);
+let fineV1 = SOLO_TEST ? Infinity : FINE_PRECHIAVI_V1_MS;
+let controlloEta = !SOLO_TEST;
+
+/** Solo per i test: { fineV1, controlloEta } come nell'app (FINE_PRECHIAVI_V1_MS, true). */
+export function _prechiaviSoloTest({ fineV1: f, controlloEta: c } = {}) {
+  if (f !== undefined) fineV1 = f;
+  if (c !== undefined) controlloEta = Boolean(c);
+}
+
+/** Testo firmato che chi scrive verifica per questa chiave (v2 con la data, oppure v1 nel periodo di passaggio). */
+export function testoFirmatoDellaVoce(destinatario, voce, adesso) {
+  if (voce.creata == null) {
+    if (adesso >= fineV1) {
+      throw new Error(`PQ: chiave post-quantum di ${destinatario} senza data (formato vecchio): non si usa piu'`);
+    }
+    return testoFirmaPq(destinatario, voce.device_id, voce.key_id, voce.tipo, voce.chiave);
+  }
+  const creata = Number(voce.creata);
+  if (!Number.isFinite(creata) || creata <= 0) throw new Error(`PQ: chiave post-quantum di ${destinatario} con una data non valida`);
+  if (controlloEta && adesso - creata > ETA_MAX_PRECHIAVE_MS) {
+    throw new Error(`PQ: chiave post-quantum di ${destinatario} troppo vecchia: non si manda niente a quel dispositivo`);
+  }
+  if (controlloEta && creata - adesso > ANTICIPO_MAX_PRECHIAVE_MS) {
+    throw new Error(`PQ: chiave post-quantum di ${destinatario} datata nel futuro: non si manda niente a quel dispositivo`);
+  }
+  return testoFirmaPq(destinatario, voce.device_id, voce.key_id, voce.tipo, voce.chiave, creata);
+}
+
 export function contestoBusta(mittente, curvaMittente, destinatario, curvaDestinatario) {
   return `palacan-pq-chiave-v1|${testo(mittente)}|${testo(curvaMittente)}|${testo(destinatario)}|${testo(curvaDestinatario)}`;
 }
@@ -94,7 +131,7 @@ export async function chiaviPqPer(destinatario, token, api = apiService) {
  * e' un tipo protetto; altrimenti la busta. Lancia se la chiave post-quantum ha una firma falsa, o se manca ma quel
  * dispositivo ha annunciato di averne (niente downgrade).
  */
-export function chiudiPerDispositivo({ payload, io, curvaMia, destinatario, curvaDest, chiaviPq }) {
+export function chiudiPerDispositivo({ payload, io, curvaMia, destinatario, curvaDest, chiaviPq, ora = () => Date.now() }) {  // [palacan-cl2h] ora
   let letto = null;
   try {
     letto = JSON.parse(payload);
@@ -112,8 +149,9 @@ export function chiudiPerDispositivo({ payload, io, curvaMia, destinatario, curv
     }
     return payload; // solo nei test vecchi (vedi senzaPqConsentito)
   }
+  const messaggioFirmato = testoFirmatoDellaVoce(destinatario, voce, ora());  // [palacan-cl2h] data controllata e firmata
   const ed = chiaveFirmaPerCurva(io, destinatario, curvaDest);
-  if (ed && !verificaFirma(ed, testoFirmaPq(destinatario, voce.device_id, voce.key_id, voce.tipo, voce.chiave), voce.firma)) {
+  if (ed && !verificaFirma(ed, messaggioFirmato, voce.firma)) {
     throw new Error(`PQ: chiave post-quantum di ${destinatario} con firma non valida: non si manda niente a quel dispositivo`);
   }
   // [palacan-pq5d] dispositivo che ha annunciato chiavi ML-KEM con firma ibrida: senza una firma ibrida valida non si
@@ -122,7 +160,7 @@ export function chiudiPerDispositivo({ payload, io, curvaMia, destinatario, curv
     const fi = voce.firma_ibrida && typeof voce.firma_ibrida === 'object' ? voce.firma_ibrida : null;
     const pubblica = fi && improntePqFirmaPerCurva(io, destinatario, curvaDest).includes(String(fi.q || ''))
       ? chiavePqFirmaNota(io, fi.q) : null;
-    const messaggio = testoFirmaPq(destinatario, voce.device_id, voce.key_id, voce.tipo, voce.chiave);
+    const messaggio = messaggioFirmato;  // [palacan-cl2h]
     if (!pubblica || !verificaIbrida({ contesto: CONTESTO_PRECHIAVE, ed, pubblica, messaggio, fe: fi.fe, fq: fi.fq })) {
       throw new Error(`PQ: chiave post-quantum di ${destinatario} senza una firma ibrida valida: non si manda niente a quel dispositivo`);
     }

@@ -81,8 +81,8 @@ describe('chiavi post-quantum del dispositivo (PQ3)', () => {
     expect(s.una.length).toBe(LOTTO);
     for (const k of [...s.una.slice(0, 5), s.riserva]) {
       const tipo = k === s.riserva ? 'riserva' : 'una';
-      expect(verifica(testoFirmaPq('bob', 'D1', k.key_id, tipo, k.chiave), k.firma)).toBe(true);
-      expect(verifica(testoFirmaPq('bob', 'D2', k.key_id, tipo, k.chiave), k.firma)).toBe(false);
+      expect(verifica(testoFirmaPq('bob', 'D1', k.key_id, tipo, k.chiave, k.creata), k.firma)).toBe(true);  // [palacan-cl2h] testo v2
+      expect(verifica(testoFirmaPq('bob', 'D2', k.key_id, tipo, k.chiave, k.creata), k.firma)).toBe(false);
       const seme = await semePq('bob', k.key_id);
       expect(Olm.pq_chiave_pubblica(seme)).toBe(k.chiave);
     }

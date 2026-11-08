@@ -145,6 +145,7 @@ Impronte: ML-DSA-65 `b17eb99909ede552…`, ed25519 `laOmhJxypCT8…`.
 | **CL2c** (`f92f97e`) | Le chiavi ML-KEM usa e getta non usate si rinnovano ogni 7 giorni; i semi ritirati restano 30 giorni per le buste già partite, poi si cancellano. Un furto dello stato smette di servire dopo il rinnovo. | `frontend/my-react-app/vite-project/tests/cl2cRinnovoPq.test.js`, `formale/proverif/6_rinnovo_prechiavi.pv` |
 | **CL2g** (`a18d9fa`) | La busta di ogni persona è firmata dalla sua chiave principale (ed25519 + ML-DSA-65): il server non può sostituirla con una sua. | `frontend/my-react-app/vite-project/tests/cl2gBustaFirmata.test.js`, `backend/tests/security/test_cl2g_busta_firmata.py` |
 | **CL2d** | Modello formale 6: rinnovo delle chiavi post-quantum e furto dello stato (sezione più sopra). | `formale/proverif/6_rinnovo_prechiavi.pv`, `formale/proverif/verifica.py` |
+| **CL2h** | Ogni chiave ML-KEM porta la data di creazione, firmata dal dispositivo. Chi scrive rifiuta le chiavi più vecchie di 21 giorni e quelle datate nel futuro: un server non può riproporre per sempre una chiave vecchia rubata. Le chiavi senza data (di prima) valgono fino al 10 dicembre 2026. | `frontend/my-react-app/vite-project/tests/cl2hDataPrechiavi.test.js`, `backend/tests/security/test_cl2h_prechiavi_datate.py` |
 
 ### Limiti dichiarati (cosa NON è garantito oggi)
 
@@ -178,7 +179,9 @@ Impronte: ML-DSA-65 `b17eb99909ede552…`, ed25519 `laOmhJxypCT8…`.
 - **Rinnovo delle chiavi post-quantum (CL2c).** Dopo un furto dello stato del dispositivo, le buste verso le chiavi
   rubate restano leggibili fino al rinnovo (al massimo 7 giorni, con l'app aperta). E se il ladro controlla anche
   il server, può continuare a consegnare le chiavi vecchie rubate, che hanno ancora la loro firma valida (o chiavi sue
-  firmate con le chiavi rubate): la sicurezza non torna da sola, serve togliere il dispositivo (modello 6).
+  firmate con le chiavi rubate): la sicurezza non torna da sola, serve togliere il dispositivo (modello 6). Da CL2h le
+  chiavi vecchie rubate valgono al massimo 21 giorni dalla loro creazione; restano le chiavi nuove firmate con le
+  chiavi di firma rubate, finché il dispositivo non viene tolto.
 - **Ratchet dimostrato in modo simbolico (L6).** Il ratchet di Olm e di Megolm è nei modelli 4 e 5, con primitive
   ideali e un numero limitato di passi. Restano due limiti, dichiarati e mostrati dai modelli: un dispositivo rubato
   legge la cronologia di Megolm che aveva già ricevuto; dopo un furto, Olm torna sicuro solo dopo un giro di chiavi

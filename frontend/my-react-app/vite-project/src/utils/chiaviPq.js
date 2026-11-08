@@ -41,7 +41,10 @@ export const CHIAVE_ARCHIVIO_PQ = archivio;
 let coda = Promise.resolve();
 
 /** Testo firmato dal dispositivo per ogni chiave pubblica post-quantum (lo verifica chi la usa). */
-export function testoFirmaPq(utente, dispositivo, keyId, tipo, chiave) {
+// [palacan-cl2h] v2: con il momento di creazione (millisecondi), firmato insieme alla chiave. Chi scrive rifiuta le
+// chiavi troppo vecchie (bustePq.js): un server non puo' riproporre per sempre una chiave vecchia rubata.
+export function testoFirmaPq(utente, dispositivo, keyId, tipo, chiave, creata = null) {
+  if (creata != null) return `palacan-pq-prechiave-v2|${utente}|${dispositivo}|${keyId}|${tipo}|${chiave}|${Math.trunc(Number(creata))}`;
   return `palacan-pq-prechiave-v1|${utente}|${dispositivo}|${keyId}|${tipo}|${chiave}`;
 }
 
@@ -61,7 +64,7 @@ function inEsclusiva(io, fn) {
 }
 
 async function leggiArchivio(io) {
-  const vuoto = { una: {}, riserve: {}, riservaAttuale: null, ibride: null, ibrideV2: null, rinnovoUna: null };  // [palacan-pq5d] ibride [palacan-pq7c] ibrideV2 [palacan-cl2c] rinnovoUna
+  const vuoto = { una: {}, riserve: {}, riservaAttuale: null, ibride: null, ibrideV2: null, rinnovoUna: null, datate: false };  // [palacan-cl2h] datate  // [palacan-pq5d] ibride [palacan-pq7c] ibrideV2 [palacan-cl2c] rinnovoUna
   let grezzo = null;
   try {
     grezzo = localStorage.getItem(archivio(io));
@@ -78,6 +81,7 @@ async function leggiArchivio(io) {
     ibride: dati ? dati.ibride || null : null,  // [palacan-pq5d]
     ibrideV2: dati ? dati.ibrideV2 || null : null,  // [palacan-pq7c] il server ha SOLO chiavi con la firma ibrida
     rinnovoUna: dati ? dati.rinnovoUna || null : null,  // [palacan-cl2c] ultimo rinnovo completo delle usa e getta
+    datate: Boolean(dati && dati.datate),  // [palacan-cl2h] sul server solo chiavi con la data firmata (testo v2)
   };
 }
 
@@ -85,13 +89,13 @@ async function scriviArchivio(io, dati) {
   localStorage.setItem(archivio(io), await cifraConDispositivo(JSON.stringify(dati), etichetta(io)));
 }
 
-function nuovaChiave({ io, dispositivo, tipo, firma }) {
+function nuovaChiave({ io, dispositivo, tipo, firma, creata }) {  // [palacan-cl2h] creata
   const seme = Olm.pq_nuovo_seme();
   const chiave = Olm.pq_chiave_pubblica(seme);
   const keyId = nuovoId();
-  const testoFirmato = testoFirmaPq(io, dispositivo, keyId, tipo, chiave);
+  const testoFirmato = testoFirmaPq(io, dispositivo, keyId, tipo, chiave, creata);  // [palacan-cl2h] testo v2, con la data
   const ibrida = firmaIbrida({ io, contesto: CONTESTO_PRECHIAVE, messaggio: testoFirmato, firmaEd: firma });  // [palacan-pq5d]
-  return { seme, keyId, uscita: { key_id: keyId, chiave, firma: firma(testoFirmato), ...(ibrida ? { firma_ibrida: ibrida } : {}) } };
+  return { seme, keyId, uscita: { key_id: keyId, chiave, creata, firma: firma(testoFirmato), ...(ibrida ? { firma_ibrida: ibrida } : {}) } };
 }
 
 // [palacan-cl2c] Cancella i semi delle usa e getta ritirate (tolte dal server con "sostituisci") da piu' di
@@ -114,6 +118,13 @@ export function usaEGettaDaRinnovare(dati, adesso) {
   if (dati && dati.rinnovoUna) return adesso - dati.rinnovoUna > VITA_UNA_MS;
   const create = Object.values((dati && dati.una) || {}).map((v) => (v && v.creata) || 0);
   return create.length > 0 && adesso - Math.min(...create) > VITA_UNA_MS;
+}
+
+// [palacan-cl2h] Archivio di prima di CL2h con chiavi gia' pubblicate (firmate SENZA data): si ripubblica tutto una volta
+// (usa e getta con "sostituisci" e una riserva nuova). Dispositivo nuovo: no, il primo caricamento e' gia' datato.
+export function prechiaviDaDatare(dati) {
+  if (!dati || dati.datate) return false;
+  return Object.keys(dati.una || {}).length > 0 || Boolean(dati.riservaAttuale);
 }
 
 /**
@@ -140,7 +151,8 @@ export function assicuraChiaviPq({ io, token, dispositivo, firma, curva = null, 
       const sulServer = Number(stato && stato.una) || 0;
       const adesso = ora();
       const attuale = dati.riservaAttuale ? dati.riserve[dati.riservaAttuale] : null;
-      const serveRiserva = !(stato && stato.riserva) || !attuale || adesso - (attuale.creata || 0) > VITA_RISERVA_MS;
+      const serveRiserva = !(stato && stato.riserva) || !attuale || adesso - (attuale.creata || 0) > VITA_RISERVA_MS
+        || prechiaviDaDatare(dati);  // [palacan-cl2h] anche la riserva va ripubblicata con la data
       // [palacan-pq5d] chiave ML-DSA-65 pronta e chiavi pubblicate firmate con un'altra (o senza): si ripubblica TUTTO
       // con la firma ibrida ("sostituisci": il server toglie le usa e getta vecchie), poi lo si annuncia
       const impronta = improntaFirmaPq(io);
@@ -156,7 +168,8 @@ export function assicuraChiaviPq({ io, token, dispositivo, firma, curva = null, 
       // [palacan-pq7c] "ibrideV2": archivio scritto prima di questa correzione -> sul server ci possono essere chiavi
       // senza firma ibrida: si ripubblica tutto una volta (sostituisci)
       const daRifirmare = Boolean(impronta) && dati.ibrideV2 !== impronta;
-      const sostituisci = daRifirmare || usaEGettaDaRinnovare(dati, adesso);  // [palacan-cl2c] rifirma o rinnovo periodico
+      const sostituisci = daRifirmare || usaEGettaDaRinnovare(dati, adesso)  // [palacan-cl2c] rifirma o rinnovo periodico
+        || prechiaviDaDatare(dati);  // [palacan-cl2h] chiavi vecchie senza data: si ripubblicano
       const quante = sostituisci ? LOTTO : (sulServer < MIN_UNA ? Math.min(LOTTO, MAX_SERVER - sulServer) : 0);
       const scaduti = togliSemiScaduti(dati, adesso);  // [palacan-cl2c]
       if (!serveRiserva && !sostituisci && quante <= 0) {
@@ -168,13 +181,13 @@ export function assicuraChiaviPq({ io, token, dispositivo, firma, curva = null, 
 
       const una = [];
       for (let i = 0; i < quante; i += 1) {
-        const k = nuovaChiave({ io, dispositivo, tipo: 'una', firma });
+        const k = nuovaChiave({ io, dispositivo, tipo: 'una', firma, creata: adesso });  // [palacan-cl2h]
         dati.una[k.keyId] = { seme: k.seme, creata: adesso };
         una.push(k.uscita);
       }
       let riserva = null;
       if (serveRiserva || daRifirmare) {  // [palacan-pq5d]
-        const k = nuovaChiave({ io, dispositivo, tipo: 'riserva', firma });
+        const k = nuovaChiave({ io, dispositivo, tipo: 'riserva', firma, creata: adesso });  // [palacan-cl2h]
         dati.riserve[k.keyId] = { seme: k.seme, creata: adesso };
         dati.riservaAttuale = k.keyId;
         riserva = k.uscita;
@@ -199,6 +212,10 @@ export function assicuraChiaviPq({ io, token, dispositivo, firma, curva = null, 
           }
         }
         dati.rinnovoUna = adesso;
+        await scriviArchivio(io, dati);
+      }
+      if (!dati.datate) {  // [palacan-cl2h] solo dopo che il server le ha: tutte con la data firmata
+        dati.datate = true;
         await scriviArchivio(io, dati);
       }
       if (daRifirmare) {  // [palacan-pq5d] solo dopo che il server le ha: tutte firmate in modo ibrido, si annuncia

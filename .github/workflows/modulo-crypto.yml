@@ -24,7 +24,7 @@ permissions:
 jobs:
   modulo:
     name: palacan-crypto (Rust, WASM, compatibilita' con libolm)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # [palacan-r4] versione fissa: un cambio di sistema deciso da GitHub non rompe niente a sorpresa
     timeout-minutes: 30
     defaults:
       run:
