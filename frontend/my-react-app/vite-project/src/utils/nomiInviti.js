@@ -9,15 +9,40 @@
 
 import * as apiService from '../apiService';
 import { nomeLocale, imparaNomeStanza, utenteCorrenteNomi } from './nomiStanze';
-import { sigilla, apriSigillo } from './busteSigillate';
+import { sigilla, apriSigillo, chiaviBustaDi } from './busteSigillate';  // [palacan-cl2f] chiaviBustaDi
+import { bustaInAttesaDiFirma } from './busteSigillate';  // [palacan-cl2g2]
+
+// [palacan-cl2g] chi invita (per riconoscere la chiave principale gia' ricordata dell'invitato)
+function chiInvita() {
+  try {
+    const io = typeof utenteCorrenteNomi === 'function' ? utenteCorrenteNomi() : null;
+    return typeof io === 'string' && io ? io : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// [palacan-cl2g2] Busta dell'invitato rifiutata (senza firma valida): di solito e' un dispositivo appena entrato (account
+// ripristinato) che la firma pochi secondi dopo, quando ha la chiave principale. Si aspetta un poco e si riprova; se la
+// firma non arriva, l'invito parte senza nome, come prima. Nessuna attesa se l'invitato non ha proprio una busta.
+let ATTESE_FIRMA_MS = [2000, 4000];
+export function _attesePerTest(lista) {
+  ATTESE_FIRMA_MS = Array.isArray(lista) ? lista : [2000, 4000];
+}
+const aspetta = (ms) => new Promise((ok) => setTimeout(ok, ms));
 
 export async function bustaNomePer(roomId, invitato, token) {
   try {
     const nome = nomeLocale(roomId);
     if (!nome || !invitato || !token) return null;
-    const chiave = await apiService.getBustaKey(invitato, token);
-    if (!chiave) return null;
-    return await sigilla(chiave, { v: 1, tipo: 'nome_invito', nome });
+    let chiavi = await chiaviBustaDi(invitato, token, chiInvita());  // [palacan-cl2f] X25519 + ML-KEM se c'e' [palacan-cl2g] firmata
+    for (const ms of ATTESE_FIRMA_MS) {  // [palacan-cl2g2]
+      if (chiavi || !bustaInAttesaDiFirma(invitato)) break;
+      await aspetta(ms);
+      chiavi = await chiaviBustaDi(invitato, token, chiInvita());
+    }
+    if (!chiavi) return null;
+    return await sigilla(chiavi.chiave, { v: 1, tipo: 'nome_invito', nome }, chiavi.pq);
   } catch (_) {
     return null;
   }

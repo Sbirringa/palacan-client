@@ -38,7 +38,7 @@ This repository contains **only the code that runs on your device**: the Palacan
 
 License: **all rights reserved**. You may only read and verify this code (see `LICENSE`).
 
-Exported from the development repository, commit `823119b` (2026-11-08).
+Exported from the development repository, commit `8e20570` (2026-11-08).
 
 ## Why the server code is not here
 

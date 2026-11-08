@@ -28,3 +28,8 @@ globalThis.fetch = async (risorsa, opzioni) => {
 if (typeof window !== 'undefined') {
   window.fetch = globalThis.fetch;
 }
+
+// [palacan-cl2b] Nei test vecchi, che non preparano chiavi post-quantum, le chiavi di stanza possono ancora viaggiare
+// senza busta ML-KEM. Vale SOLO dentro vitest (src/utils/bustePq.js lo ignora fuori dai test) e i test della busta
+// (tests/bustePq.test.js) la rimettono obbligatoria, come nell'app vera.
+globalThis.__PALACAN_TEST_SENZA_PQ__ = true;

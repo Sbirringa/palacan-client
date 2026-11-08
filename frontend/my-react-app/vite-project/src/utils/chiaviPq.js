@@ -28,6 +28,12 @@ export const MAX_SERVER = 100; // lo stesso limite del backend
 export const VITA_RISERVA_MS = 7 * 24 * 3600 * 1000;
 export const CONSERVA_RISERVA_MS = 30 * 24 * 3600 * 1000;
 export const MAX_UNA_LOCALI = 300;
+// [palacan-cl2c] Rinnovo periodico delle usa e getta NON usate. Chi ruba questo dispositivo prende anche i semi delle
+// chiavi ancora sul server, e finche' restano valide potrebbe aprire le buste future. Ogni VITA_UNA_MS si pubblica un
+// lotto nuovo ("sostituisci": il server toglie le vecchie non usate); i semi vecchi restano CONSERVA_UNA_MS (buste gia'
+// partite verso un dispositivo spento), poi si cancellano: un furto smette di servire dopo al massimo la loro somma.
+export const VITA_UNA_MS = 7 * 24 * 3600 * 1000;
+export const CONSERVA_UNA_MS = 30 * 24 * 3600 * 1000;
 const archivio = (io) => `palacan_pq_semi_${String(io || '').trim()}`;
 const etichetta = (io) => `palacan-pq-semi:${String(io || '').trim()}`;
 export const CHIAVE_ARCHIVIO_PQ = archivio;
@@ -55,7 +61,7 @@ function inEsclusiva(io, fn) {
 }
 
 async function leggiArchivio(io) {
-  const vuoto = { una: {}, riserve: {}, riservaAttuale: null, ibride: null, ibrideV2: null };  // [palacan-pq5d] ibride [palacan-pq7c] ibrideV2
+  const vuoto = { una: {}, riserve: {}, riservaAttuale: null, ibride: null, ibrideV2: null, rinnovoUna: null };  // [palacan-pq5d] ibride [palacan-pq7c] ibrideV2 [palacan-cl2c] rinnovoUna
   let grezzo = null;
   try {
     grezzo = localStorage.getItem(archivio(io));
@@ -71,6 +77,7 @@ async function leggiArchivio(io) {
     riservaAttuale: dati ? dati.riservaAttuale || null : null,
     ibride: dati ? dati.ibride || null : null,  // [palacan-pq5d]
     ibrideV2: dati ? dati.ibrideV2 || null : null,  // [palacan-pq7c] il server ha SOLO chiavi con la firma ibrida
+    rinnovoUna: dati ? dati.rinnovoUna || null : null,  // [palacan-cl2c] ultimo rinnovo completo delle usa e getta
   };
 }
 
@@ -85,6 +92,28 @@ function nuovaChiave({ io, dispositivo, tipo, firma }) {
   const testoFirmato = testoFirmaPq(io, dispositivo, keyId, tipo, chiave);
   const ibrida = firmaIbrida({ io, contesto: CONTESTO_PRECHIAVE, messaggio: testoFirmato, firmaEd: firma });  // [palacan-pq5d]
   return { seme, keyId, uscita: { key_id: keyId, chiave, firma: firma(testoFirmato), ...(ibrida ? { firma_ibrida: ibrida } : {}) } };
+}
+
+// [palacan-cl2c] Cancella i semi delle usa e getta ritirate (tolte dal server con "sostituisci") da piu' di
+// CONSERVA_UNA_MS. Mai quelle ancora pubblicate, per quanto vecchie: un dispositivo rimasto spento a lungo deve poter
+// aprire le buste arrivate nel frattempo. Restituisce quanti semi ha cancellato.
+export function togliSemiScaduti(dati, adesso) {
+  let tolti = 0;
+  for (const [id, v] of Object.entries((dati && dati.una) || {})) {
+    if (v && v.ritirata && adesso - v.ritirata > CONSERVA_UNA_MS) {
+      delete dati.una[id];
+      tolti += 1;
+    }
+  }
+  return tolti;
+}
+
+// [palacan-cl2c] Le usa e getta vanno rinnovate? Dopo VITA_UNA_MS dall'ultimo rinnovo. Archivio di prima (senza data):
+// si', se la piu' vecchia ha superato VITA_UNA_MS. Dispositivo nuovo (nessuna chiave): no, e' il primo caricamento.
+export function usaEGettaDaRinnovare(dati, adesso) {
+  if (dati && dati.rinnovoUna) return adesso - dati.rinnovoUna > VITA_UNA_MS;
+  const create = Object.values((dati && dati.una) || {}).map((v) => (v && v.creata) || 0);
+  return create.length > 0 && adesso - Math.min(...create) > VITA_UNA_MS;
 }
 
 /**
@@ -127,8 +156,11 @@ export function assicuraChiaviPq({ io, token, dispositivo, firma, curva = null, 
       // [palacan-pq7c] "ibrideV2": archivio scritto prima di questa correzione -> sul server ci possono essere chiavi
       // senza firma ibrida: si ripubblica tutto una volta (sostituisci)
       const daRifirmare = Boolean(impronta) && dati.ibrideV2 !== impronta;
-      const quante = daRifirmare ? LOTTO : (sulServer < MIN_UNA ? Math.min(LOTTO, MAX_SERVER - sulServer) : 0);
-      if (!serveRiserva && !daRifirmare && quante <= 0) {
+      const sostituisci = daRifirmare || usaEGettaDaRinnovare(dati, adesso);  // [palacan-cl2c] rifirma o rinnovo periodico
+      const quante = sostituisci ? LOTTO : (sulServer < MIN_UNA ? Math.min(LOTTO, MAX_SERVER - sulServer) : 0);
+      const scaduti = togliSemiScaduti(dati, adesso);  // [palacan-cl2c]
+      if (!serveRiserva && !sostituisci && quante <= 0) {
+        if (scaduti > 0) await scriviArchivio(io, dati);  // [palacan-cl2c] semi scaduti cancellati anche senza caricare
         segnaPqPronto(io);  // [palacan-pq4] chiavi post-quantum a posto: si annuncia nei messaggi Olm
         if (impronta && dati.ibrideV2 === impronta) segnaPqIbridoPronto(io);  // [palacan-pq5d] [palacan-pq7c]
         return { caricate: 0, riservaNuova: false };
@@ -155,9 +187,20 @@ export function assicuraChiaviPq({ io, token, dispositivo, firma, curva = null, 
       dati.una = Object.fromEntries(ordinate.slice(0, MAX_UNA_LOCALI));
       // prima i semi sul dispositivo, poi le chiavi sul server: mai una chiave pubblicata senza il suo seme
       await scriviArchivio(io, dati);
-      await api.uploadPqKeys({ deviceId: dispositivo, una, riserva, ...(daRifirmare ? { sostituisci: true } : {}) }, token);  // [palacan-pq5d]
-      console.log(`🛡️ [PQ] chiavi post-quantum pubblicate: ${una.length} usa e getta${riserva ? ' + riserva nuova' : ''}${daRifirmare ? ' (firma ibrida)' : ''}`);
+      await api.uploadPqKeys({ deviceId: dispositivo, una, riserva, ...(sostituisci ? { sostituisci: true } : {}) }, token);  // [palacan-pq5d] [palacan-cl2c]
+      console.log(`🛡️ [PQ] chiavi post-quantum pubblicate: ${una.length} usa e getta${riserva ? ' + riserva nuova' : ''}${daRifirmare ? ' (firma ibrida)' : (sostituisci ? ' (rinnovo periodico)' : '')}`);
       segnaPqPronto(io);  // [palacan-pq4] da ora si annuncia nei messaggi Olm
+      if (sostituisci || !dati.rinnovoUna) {  // [palacan-cl2c] solo dopo che il server le ha
+        if (sostituisci) {
+          // il server ha tolto le usa e getta vecchie: i loro semi restano CONSERVA_UNA_MS, poi togliSemiScaduti li cancella
+          const nuove = new Set(una.map((u) => u.key_id));
+          for (const [id, v] of Object.entries(dati.una)) {
+            if (!nuove.has(id) && v && !v.ritirata) v.ritirata = adesso;
+          }
+        }
+        dati.rinnovoUna = adesso;
+        await scriviArchivio(io, dati);
+      }
       if (daRifirmare) {  // [palacan-pq5d] solo dopo che il server le ha: tutte firmate in modo ibrido, si annuncia
         dati.ibride = impronta;
         dati.ibrideV2 = impronta;  // [palacan-pq7c]

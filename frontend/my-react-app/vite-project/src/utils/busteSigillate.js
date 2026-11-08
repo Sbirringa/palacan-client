@@ -17,7 +17,9 @@
 
 import { sendToDevice, sendMessage } from '../wsClient';
 import * as apiService from '../apiService';
-import { bustaSupportata, bustaPubblica, chiavePrivataBusta } from './busta';
+import { bustaSupportata, bustaPubblica, chiavePrivataBusta, semeBustaPq } from './busta';  // [palacan-cl2f] semeBustaPq
+import Olm from '../crypto/olm.js';  // [palacan-cl2f] busta ibrida
+import { valutaBusta } from './bustaFirmata';  // [palacan-cl2g]
 
 const ETICHETTA = new TextEncoder().encode('palacan-busta-v1');
 const VERSIONE = 1;
@@ -28,12 +30,14 @@ const DURATA_SENZA_BUSTA = 60 * 1000;
 const MASSIMO_CONFERME = 2000;
 
 const cacheBuste = new Map(); // destinatario -> { chiave | null, scade }
+const rifiutate = new Set(); // [palacan-cl2g2] destinatari con una busta senza firma valida (all'ultima lettura)
 const verificati = new Map(); // `${utente}|${chiave}` -> true
 const conferme = new Map(); // codice casuale -> identificativo di sempre
 
 // Solo per i test: dimentica le buste dei destinatari e le verifiche gia' fatte.
 export function _azzeraCache() {
   cacheBuste.clear();
+  rifiutate.clear();  // [palacan-cl2g2]
   verificati.clear();
 }
 
@@ -61,7 +65,7 @@ async function chiaveSimmetrica(condiviso, pubblicaUsaEGetta, pubblicaDestinatar
   );
 }
 
-export async function sigilla(pubblicaDestinatarioB64, oggetto) {
+async function sigillaV1(pubblicaDestinatarioB64, oggetto) {
   const pubblicaDestinatario = daBase64(pubblicaDestinatarioB64);
   if (pubblicaDestinatario.length !== 32) throw new Error('busta del destinatario non valida');
   const destinatario = await crypto.subtle.importKey('raw', pubblicaDestinatario, { name: 'X25519' }, false, []);
@@ -83,7 +87,21 @@ export async function sigilla(pubblicaDestinatarioB64, oggetto) {
   return base64(uscita);
 }
 
-export async function apriSigillo(username, testo) {
+// [palacan-cl2f] Busta IBRIDA (v2): la busta X25519 di sempre (v1) chiusa DENTRO una busta ML-KEM-768 (pq_sigilla, la
+// stessa delle chiavi di stanza), legata alla chiave X25519 del destinatario. Per aprirla bisogna rompere X25519 E
+// ML-KEM: chi registra oggi il traffico non legge un domani ne' il mittente nascosto ne' il nome di un gruppo.
+// Formato: "2:" + busta ML-KEM in base64 ("2:" non e' base64: non si confonde con la v1).
+export const PREFISSO_V2 = '2:';
+const contestoV2 = (pubblicaX25519) => `palacan-busta-v2|${String(pubblicaX25519 || '').trim()}`;
+
+export async function sigilla(pubblicaDestinatarioB64, oggetto, pubblicaPq = null) {
+  const v1 = await sigillaV1(pubblicaDestinatarioB64, oggetto);
+  if (!pubblicaPq) return v1;
+  await Olm.init();
+  return PREFISSO_V2 + Olm.pq_sigilla(String(pubblicaPq).trim(), contestoV2(pubblicaDestinatarioB64), v1);
+}
+
+async function apriSigilloV1(username, testo) {
   const dati = daBase64(testo);
   if (dati[0] !== VERSIONE || dati.length < 1 + 32 + 12 + 16) throw new Error('formato della busta non riconosciuto');
   const pubblicaUsaEGetta = dati.slice(1, 33);
@@ -98,12 +116,48 @@ export async function apriSigillo(username, testo) {
   return JSON.parse(new TextDecoder().decode(chiaro));
 }
 
-async function bustaDi(destinatario, token) {
-  const voce = cacheBuste.get(destinatario);
-  if (voce && voce.scade > Date.now()) return voce.chiave;
+export async function apriSigillo(username, testo) {
+  const t = String(testo || '');
+  if (t.startsWith(PREFISSO_V2)) {  // [palacan-cl2f]
+    await Olm.init();
+    const interno = Olm.pq_apri(await semeBustaPq(username), contestoV2(await bustaPubblica(username)), t.slice(PREFISSO_V2.length));
+    return apriSigilloV1(username, interno);
+  }
+  return apriSigilloV1(username, t);
+}
+
+// [palacan-cl2f] chiavi della busta di un utente: { chiave (X25519), pq (ML-KEM-768 o null) } oppure null
+// [palacan-cl2g] "io" (chi scrive): serve a riconoscere la chiave principale gia' ricordata del destinatario
+export async function chiaviBustaDi(destinatario, token, io = null) {
+  let leggiEntrambe = null;
+  try {
+    leggiEntrambe = typeof apiService.getBustaKeys === 'function' ? apiService.getBustaKeys : null;
+  } catch (_) {
+    leggiEntrambe = null; // apiService finto dei test vecchi, senza getBustaKeys
+  }
+  if (leggiEntrambe) {
+    const v = await leggiEntrambe(destinatario, token);
+    if (!v || !v.chiave) return null;
+    // [palacan-cl2g] busta firmata dalla chiave principale del destinatario (se ne ha una): altrimenti non si usa
+    const esito = await valutaBusta({ io, utente: destinatario, chiave: v.chiave, pq: v.pq || null, firma: v.firma || null, principale: v.principale || null });
+    if (esito === 'rifiutata') {
+      console.warn(`⚠️ [busta] busta di ${destinatario} senza una firma valida della sua chiave principale: non si usa`);
+      rifiutate.add(destinatario);  // [palacan-cl2g2]
+      return null;
+    }
+    rifiutate.delete(destinatario);  // [palacan-cl2g2]
+    return { chiave: v.chiave, pq: v.pq || null };
+  }
   const chiave = await apiService.getBustaKey(destinatario, token);
-  cacheBuste.set(destinatario, { chiave: chiave || null, scade: Date.now() + (chiave ? DURATA_BUSTA : DURATA_SENZA_BUSTA) });
-  return chiave || null;
+  return chiave ? { chiave, pq: null } : null;
+}
+
+async function bustaDi(destinatario, token, io = null) {  // [palacan-cl2g] io
+  const voce = cacheBuste.get(destinatario);
+  if (voce && voce.scade > Date.now()) return voce.chiavi;
+  const chiavi = await chiaviBustaDi(destinatario, token, io);
+  cacheBuste.set(destinatario, { chiavi, scade: Date.now() + (chiavi ? DURATA_BUSTA : DURATA_SENZA_BUSTA) });
+  return chiavi;
 }
 
 function codiceCasuale() {
@@ -123,10 +177,10 @@ export async function inviaChiaveDiStanza(mittente, token, parametri) {
   try {
     if (parametri && parametri.eventType === 'm.room_key' && mittente && token
         && parametri.targetUsername && parametri.targetUsername !== mittente && (await bustaSupportata())) {
-      const chiave = await bustaDi(parametri.targetUsername, token);
-      if (chiave) {
+      const chiavi = await bustaDi(parametri.targetUsername, token, mittente);  // [palacan-cl2g]
+      if (chiavi) {
         const codice = codiceCasuale();
-        const busta = await sigilla(chiave, {
+        const busta = await sigilla(chiavi.chiave, {
           v: 1,
           sender: mittente,
           sender_key: parametri.senderKey || parametri.content?.sender_key || null,
@@ -134,7 +188,7 @@ export async function inviaChiaveDiStanza(mittente, token, parametri) {
           client_msg_id: codice,
           algorithm: parametri.algorithm || null,
           content: parametri.content,
-        });
+        }, chiavi.pq);  // [palacan-cl2f] busta ibrida se il destinatario ha la chiave ML-KEM
         conferme.set(codice, parametri.clientMsgId || null);
         while (conferme.size > MASSIMO_CONFERME) conferme.delete(conferme.keys().next().value);
         return sendMessage({
@@ -195,4 +249,9 @@ export async function apriBustaRicevuta(username, token, data) {
   } catch (_) {
     return null;
   }
+}
+
+// [palacan-cl2g2] La busta di "destinatario" e' stata rifiutata all'ultima lettura (c'e' ma senza firma valida)?
+export function bustaInAttesaDiFirma(destinatario) {
+  return rifiutate.has(destinatario);
 }

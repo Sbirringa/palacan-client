@@ -2100,3 +2100,28 @@ export const putFirmaDispositivo = async (deviceId, { impronta_principale, firma
     body: JSON.stringify({ impronta_principale, firma_ed, firma_pq }),
   },
 );
+
+// [palacan-cl2f] Busta IBRIDA: chiave X25519 + chiave ML-KEM-768 (1184 byte) della busta. Senza ML-KEM si pubblica solo
+// la X25519 e il server toglie quella ML-KEM vecchia.
+// [palacan-cl2g] firma = { impronta, firma_ed, firma_pq } della chiave principale, oppure null
+export const publishBustaKeys = async (publicKey, publicKeyPq, token, firma = null) => {
+  return fetchWithAuth('/keys/busta', token, {
+    method: 'PUT',
+    body: JSON.stringify({ public_key: publicKey, ...(publicKeyPq ? { public_key_pq: publicKeyPq } : {}), ...(firma ? { firma } : {}) }),
+  });
+};
+
+// [palacan-cl2f] { chiave (X25519), pq (ML-KEM-768 o null) } oppure null se l'utente non ha una busta.
+export const getBustaKeys = async (username, token) => {
+  try {
+    const res = await fetchWithAuth(`/keys/${encodeURIComponent(username)}/busta`, token, { method: 'GET' });
+    return res?.busta_key ? {
+      chiave: res.busta_key,
+      pq: res.busta_pq || null,
+      firma: res.busta_firma || null,  // [palacan-cl2g] firma della chiave principale
+      principale: res.principale || null,  // [palacan-cl2g] chiave principale (la verifica chi scrive)
+    } : null;
+  } catch (_) {
+    return null;
+  }
+};

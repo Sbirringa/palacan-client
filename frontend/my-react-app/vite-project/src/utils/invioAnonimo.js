@@ -190,10 +190,10 @@ export function leggiUscita(username) {
   return Array.isArray(elenco) ? elenco : [];
 }
 
-export function mettiInUscita(username, { clientMsgId, roomId, cipherBody = null, creato = Date.now() } = {}) {
+export function mettiInUscita(username, { clientMsgId, roomId, cipherBody = null, creato = Date.now(), canale = 'anonimo' } = {}) {  // [palacan-cl2e] canale
   if (!username || !clientMsgId || !roomId) return;
   const elenco = leggiUscita(username).filter((v) => String(v.clientMsgId) !== String(clientMsgId));
-  elenco.push({ clientMsgId: String(clientMsgId), roomId: String(roomId), cipherBody, creato });
+  elenco.push({ clientMsgId: String(clientMsgId), roomId: String(roomId), cipherBody, creato, canale: canale === 'stanza' ? 'stanza' : 'anonimo' });
   scriviJson(chiaveUscita(username), elenco.slice(-MAX_IN_USCITA));
 }
 
@@ -201,4 +201,33 @@ export function togliDaUscita(username, clientMsgId) {
   const elenco = leggiUscita(username);
   const rimasti = elenco.filter((v) => String(v.clientMsgId) !== String(clientMsgId));
   if (rimasti.length !== elenco.length) scriviJson(chiaveUscita(username), rimasti);
+}
+
+// [palacan-cl2e] Canale di una stanza per la coda di uscita: 'anonimo' per le chat private, 'stanza' (canale identificato,
+// fase 3.5) per le chat aziendali. Il ripiego "legacy" (testo via Olm, senza busta post-quantum) non esiste piu'.
+export function canaleDi(stanza) {
+  return stanzaPrivata(stanza) ? 'anonimo' : 'stanza';
+}
+
+// [palacan-cl2e] Ritenta una voce della coda sul SUO canale (le voci di prima, senza canale, sono chat private).
+//   cifra(voce)        -> { cipherBody, sessionId, senderKey } cifrato di nuovo con Megolm, oppure null se il testo non c'e' piu'
+//   inviaAnonimo(p)    -> { roomId, cipherBody, clientMsgId } sul canale anonimo
+//   inviaStanza(p)     -> { roomId, cipherBody, sessionId, senderKey, clientMsgId } sul canale della stanza
+// Restituisce 'anonimo' | 'stanza' | 'senza_testo'. Un errore di invio risale: la voce resta in coda.
+// Sul canale della stanza si cifra sempre di nuovo (servono session_id e chiave del mittente della sessione attuale).
+export async function ritentaVoce(voce, { cifra, inviaAnonimo: anonimo, inviaStanza }) {
+  if (voce && voce.canale === 'stanza') {
+    const cifrato = await cifra(voce);
+    if (!cifrato) return 'senza_testo';
+    await inviaStanza({ roomId: voce.roomId, cipherBody: cifrato.cipherBody, sessionId: cifrato.sessionId, senderKey: cifrato.senderKey, clientMsgId: voce.clientMsgId });
+    return 'stanza';
+  }
+  let cipherBody = voce.cipherBody;
+  if (!cipherBody) {
+    const cifrato = await cifra(voce);
+    if (!cifrato) return 'senza_testo';
+    cipherBody = cifrato.cipherBody;
+  }
+  await anonimo({ roomId: voce.roomId, cipherBody, clientMsgId: voce.clientMsgId });
+  return 'anonimo';
 }

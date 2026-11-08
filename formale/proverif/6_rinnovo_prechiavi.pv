@@ -1,0 +1,121 @@
+(* =====================================================================================================================
+   Palacan - modello formale 6: rinnovo delle chiavi ML-KEM usa e getta e furto dello stato     [palacan-cl2d]
+
+   Cosa modella (frontend src/utils/chiaviPq.js, CL2c; bustePq.js; crypto/palacan-crypto/src/pq.rs):
+     - le chiavi di stanza viaggiano in una busta ML-KEM-768 verso una chiave usa e getta del dispositivo di Bob,
+       pubblicata sul server con la firma del dispositivo (qui: una firma sola, che il furto ruba comunque per intero,
+       ed25519 e ML-DSA-65);
+     - il seme di una chiave usata si cancella subito (consumaSemePq); le chiavi NON usate restano sul server;
+     - CL2c: ogni 7 giorni Bob pubblica un lotto nuovo ("sostituisci": il server toglie le vecchie non usate);
+     - caso peggiore per la busta: lo strato Olm intorno e' gia' rotto (computer quantistico, modello 1), quindi la
+       busta qui viaggia in chiaro sulla rete: conta solo ML-KEM.
+   Attaccante: rete e server (Dolev-Yao). In FASE 1 ruba lo stato del dispositivo di Bob: i semi delle chiavi ancora
+   pubblicate (il seme della chiave gia' usata non c'e' piu'). In FASE 2 Bob rinnova le chiavi. [palacan-cl2d3] Le
+   chiavi di firma qui non servono al ladro: per l'attacco della domanda 4 basta la firma vecchia, ancora valida.
+   Domande:
+     - rkPrima (busta verso una chiave gia' usata, prima del furto) resta segreta          -> VERO
+     - rkSenzaRinnovo (busta verso una chiave rubata: senza rinnovo, come prima di CL2c,
+                       o nella finestra prima del rinnovo) si legge                         -> FALSO (per questo CL2c)
+     - rkDopo (dopo il rinnovo, chiave nuova consegnata senza manomissioni) resta segreta   -> VERO  (sicurezza dopo
+                                                                                                    il furto)
+     - rkManomesso (dopo il rinnovo, ma il ladro controlla anche il server e consegna al
+                    posto della chiave nuova la chiave VECCHIA rubata, con la sua firma
+                    ancora valida) si legge                                                 -> FALSO (limite dichiarato,
+                                                                                                    come il modello 5)
+     - Bob apre la busta dopo il rinnovo (modello non vuoto)                                -> raggiungibile
+   ===================================================================================================================== *)
+
+free c: channel.
+
+type key.
+type skey.
+type pkey.
+
+(* --- AEAD della busta (XChaCha20-Poly1305) con dati autenticati --- *)
+fun aenc(bitstring, key, bitstring): bitstring.
+reduc forall m: bitstring, k: key, ad: bitstring; adec(aenc(m, k, ad), k, ad) = m.
+
+(* --- ML-KEM-768 --- *)
+fun kempk(skey): pkey.
+fun kemct(pkey, bitstring): bitstring.
+fun kemss(pkey, bitstring): key.
+reduc forall sk: skey, r: bitstring; kemdec(sk, kemct(kempk(sk), r)) = kemss(kempk(sk), r).
+
+(* --- HKDF della busta: legata a segreto, chiave pubblica e ciphertext --- *)
+fun kdf(key, pkey, bitstring): key.
+
+(* --- firma del dispositivo sulle chiavi pubblicate --- *)
+fun vk(skey): pkey.
+fun firma(bitstring, skey): bitstring.
+reduc forall m: bitstring, sk: skey; verifica(firma(m, sk), vk(sk)) = m.
+
+fun pk2b(pkey): bitstring [data].
+fun k2b(key): bitstring [data].
+
+free cx: bitstring.
+(* [palacan-cl2d3] nessuna chiave del ladro: per la domanda 4 basta la chiave vecchia rubata *)
+free rkPrima, rkSenzaRinnovo, rkDopo, rkManomesso: key [private].
+
+event Aperta(key).
+
+query attacker(rkPrima) phase 2.
+query attacker(rkSenzaRinnovo) phase 2.
+query attacker(rkDopo) phase 2.
+query attacker(rkManomesso) phase 2.
+query event(Aperta(rkDopo)).
+
+process
+  new skUsata: skey;                      (* chiave usa e getta gia' usata: seme cancellato all'apertura *)
+  new skVecchia: skey;                    (* chiave usa e getta ancora sul server, non usata *)
+  new skFirma: skey;                      (* chiavi di firma del dispositivo *)
+  out(c, (vk(skFirma), kempk(skUsata), firma(pk2b(kempk(skUsata)), skFirma),
+          kempk(skVecchia), firma(pk2b(kempk(skVecchia)), skFirma)));
+  (
+    (
+      (* fase 0: Alice manda una chiave di stanza alla chiave usa e getta; Bob la apre e ne cancella il seme *)
+      new r0: bitstring;
+      let ct0 = kemct(kempk(skUsata), r0) in
+      out(c, (ct0, aenc(k2b(rkPrima), kdf(kemss(kempk(skUsata), r0), kempk(skUsata), ct0), cx)))
+    )
+  | (
+      (* fase 1: FURTO dello stato del dispositivo di Bob *)
+      phase 1;
+      out(c, skVecchia)  (* [palacan-cl2d3] i semi delle chiavi ancora pubblicate *)
+    )
+  | (
+      (* fase 1: senza rinnovo (o prima del rinnovo) il server consegna ancora la chiave vecchia *)
+      phase 1;
+      new r1: bitstring;
+      let ct1 = kemct(kempk(skVecchia), r1) in
+      out(c, (ct1, aenc(k2b(rkSenzaRinnovo), kdf(kemss(kempk(skVecchia), r1), kempk(skVecchia), ct1), cx)))
+    )
+  | (
+      (* fase 2: RINNOVO (CL2c). Giro non manomesso: Alice riceve la chiave nuova vera *)
+      phase 2;
+      new skNuova: skey;
+      out(c, kempk(skNuova));
+      (
+        (
+          new r2: bitstring;
+          let ct2 = kemct(kempk(skNuova), r2) in
+          out(c, (ct2, aenc(k2b(rkDopo), kdf(kemss(kempk(skNuova), r2), kempk(skNuova), ct2), cx)))
+        )
+      | (
+          (* Bob apre la busta con il seme nuovo *)
+          in(c, (ct: bitstring, sigillo: bitstring));
+          let k2b(x: key) = adec(sigillo, kdf(kemdec(skNuova, ct), kempk(skNuova), ct), cx) in
+          event Aperta(x)
+        )
+      )
+    )
+  | (
+      (* fase 2: giro manomesso: Alice prende dalla rete una chiave "di Bob" e controlla la firma del dispositivo;
+         il server complice del ladro le ripropone la chiave vecchia rubata, con la sua firma vera [palacan-cl2d3] *)
+      phase 2;
+      in(c, (pkq: pkey, s: bitstring));
+      if verifica(s, vk(skFirma)) = pk2b(pkq) then
+      new r3: bitstring;
+      let ct3 = kemct(pkq, r3) in
+      out(c, (ct3, aenc(k2b(rkManomesso), kdf(kemss(pkq, r3), pkq, ct3), cx)))
+    )
+  )

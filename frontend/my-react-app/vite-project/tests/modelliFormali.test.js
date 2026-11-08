@@ -10,7 +10,7 @@ import { join } from 'node:path';
 const RADICE = join(process.cwd(), '..', '..', '..');
 const PV = join(RADICE, 'formale', 'proverif');
 const leggi = (p) => (existsSync(p) ? readFileSync(p, 'utf8').replace(/\r\n/g, '\n') : '');
-const NUOVI = ['4_megolm_ratchet.pv', '5_olm_double_ratchet.pv'];
+const NUOVI = ['4_megolm_ratchet.pv', '5_olm_double_ratchet.pv', '6_rinnovo_prechiavi.pv'];  // [palacan-cl2d] 6
 
 function attesi() {
   const testo = leggi(join(PV, 'verifica.py'));

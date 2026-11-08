@@ -240,12 +240,12 @@ import { esportaDatiPersonali, importaDatiPersonali } from './utils/datiPersonal
 import { sincronizzaStatoGruppo, aggiornaNomeStatoGruppo, dimenticaStati } from './utils/statoGruppo';  // [palacan-metadati-a4.2b]
 import { linkConNome, prendiNomeInvitoPendente } from './utils/linkInvito';  // [palacan-metadati-a3.2b1]
 import { stanzaPrivata, daAttivare, segnaAttivato, inviaAnonimo, inviaAnonimoConTentativi, leggiSegreto, leggiUscita, mettiInUscita, togliDaUscita } from './utils/invioAnonimo';  // [palacan-metadati-3.4c] [palacan-metadati-3.4d-bis] [palacan-metadati-3.4d-ter]
+import { canaleDi, ritentaVoce } from './utils/invioAnonimo';  // [palacan-cl2e] coda di uscita sul canale giusto, niente ripiego legacy
 import {
   connect as connectWs,
   disconnect as disconnectWs,
   sendRoomEncrypted,
   sendToDevice,
-  sendLegacyMessage,
   sendAck,
   sendSessionReset,
   reconnectNow,
@@ -4555,19 +4555,28 @@ const handleHideMessageForMe = async (msg) => {
     for (const voce of leggiUscita(username)) {
       if (soloId && String(voce.clientMsgId) !== String(soloId)) continue;
       try {
-        let cifrato = voce.cipherBody;
-        if (!cifrato) {
-          const salvato = sentMessagesCacheRef.current[voce.clientMsgId];
-          const testo = salvato && typeof salvato === 'object' ? salvato.text : salvato;
-          if (!testo) {
-            togliDaUscita(username, voce.clientMsgId);
-            continue;
-          }
-          const sessione = await sessioneCondivisaPerInviare(voce.roomId);  // [palacan-correzione-sessione-invio]
-          cifrato = olmService.encryptGroupMessage(sessione, salvato && salvato.replyTo ? { text: testo, replyTo: salvato.replyTo } : { text: testo });
-          olmService.saveOutboundGroupSession(username, voce.roomId, sessione);
+        // [palacan-cl2e] ogni voce si ritenta sul SUO canale: anonimo (chat private) o della stanza (aziende)
+        const esito = await ritentaVoce(voce, {
+          cifra: async (v) => {
+            const salvato = sentMessagesCacheRef.current[v.clientMsgId];
+            const testo = salvato && typeof salvato === 'object' ? salvato.text : salvato;
+            if (!testo) return null;
+            const sessione = await sessioneCondivisaPerInviare(v.roomId);  // [palacan-correzione-sessione-invio]
+            const cipherBody = olmService.encryptGroupMessage(sessione, salvato && salvato.replyTo ? { text: testo, replyTo: salvato.replyTo } : { text: testo });
+            olmService.saveOutboundGroupSession(username, v.roomId, sessione);
+            const senderKey = await olmService.withAccountLock(async () => olmService.getCurve25519Key(olmAccountRef.current));
+            return { cipherBody, sessionId: sessione.session_id(), senderKey };
+          },
+          inviaAnonimo: (p) => inviaAnonimoConTentativi({ ...p, token, username }, []),
+          inviaStanza: async (p) => {
+            if (!isWsConnected()) throw new Error('rete non disponibile');
+            if (sendRoomEncrypted({ ...p, algorithm: 'm.megolm.v1.aes-sha2' }) === false) throw new Error('non inviato');
+          },
+        });
+        if (esito === 'senza_testo') {
+          togliDaUscita(username, voce.clientMsgId);
+          continue;
         }
-        await inviaAnonimoConTentativi({ roomId: voce.roomId, token, username, cipherBody: cifrato, clientMsgId: voce.clientMsgId }, []);
         togliDaUscita(username, voce.clientMsgId);
         setMessages((prev) => prev.map((m) => (String(m.id) === String(voce.clientMsgId) ? { ...m, failed: false, failReason: undefined } : m)));
         if (currentRoomRef.current && String(currentRoomRef.current.id) === String(voce.roomId)) markRoomAsRead(voce.roomId);
@@ -4695,38 +4704,13 @@ const handleSendMessage = async (text, replyTo = null) => {
       }, 2500);
       /* ── fine ECCEZIONE MIRATA v-next ─────────────────────────────────────── */
     } catch (e) {
-      console.error('Megolm send error, provo fallback legacy:', e);
-      if (stanzaPrivata(currentRoomRef.current)) {
-        // [palacan-metadati-3.4d-bis] chat privata: niente ripiego legacy (manderebbe il mittente al server)
-        setMessages((prev) => prev.map((m) => (String(m.id) === String(tempId) ? { ...m, failed: true, failReason: 'offline' } : m)));
-        mettiInUscita(username, { clientMsgId: tempId, roomId, cipherBody: null });  // [palacan-metadati-3.4d-ter]
-        return;
-      }
-
-      try {
-        const users = await apiService.getRoomUsers(roomId, token);
-        const peers = (Array.isArray(users) ? users : []).filter(
-          (u) => u.username !== username
-        );
-
-        for (const peer of peers) {
-          const session = await ensureSession(peer.username);
-          if (!session) continue;
-
-          const encrypted = olmService.encryptMessage(session, text);
-          updateSession(peer.username, session);
-
-          sendLegacyMessage({
-            roomId,
-            cipherBody: encrypted.body,
-            cipherType: encrypted.type,
-            targetUsername: peer.username,
-            clientMsgId: tempId,
-          });
-        }
-      } catch (legacyError) {
-        console.error('Send Error:', legacyError);
-      }
+      // [palacan-cl2e] niente ripiego legacy in NESSUNA stanza: mandava il testo via Olm senza la busta post-quantum
+      // (leggibile un domani da chi registra il traffico) e con il mittente visibile al server. Come nelle chat private
+      // ([palacan-metadati-3.4d-bis] chat privata: niente ripiego legacy (manderebbe il mittente al server)), il
+      // messaggio resta "non inviato" e va nella coda di uscita, che lo ritenta da sola sul canale della sua stanza.
+      console.error('Megolm send error, messaggio nella coda di uscita:', e);
+      setMessages((prev) => prev.map((m) => (String(m.id) === String(tempId) ? { ...m, failed: true, failReason: 'offline' } : m)));
+      mettiInUscita(username, { clientMsgId: tempId, roomId, cipherBody: null, canale: canaleDi(currentRoomRef.current) });  // [palacan-metadati-3.4d-ter] [palacan-cl2e]
     }
   };
 

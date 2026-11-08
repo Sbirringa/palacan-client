@@ -51,6 +51,13 @@ ATTESI = {
         ("Olm: se l'attaccante manomette quel giro, non torna (limite dichiarato)", "falso"),
         ("Olm: Bob riceve il messaggio dopo la guarigione (modello non vuoto)", "falso"),
     ],
+    "6_rinnovo_prechiavi.pv": [  # [palacan-cl2d]
+        ("PQ: busta verso una chiave usa e getta gia' usata segreta anche dopo il furto", "vero"),
+        ("PQ: busta verso una chiave rubata non rinnovata si legge (per questo CL2c)", "falso"),
+        ("PQ: dopo il rinnovo CL2c le buste nuove sono segrete", "vero"),
+        ("PQ: dopo il rinnovo, il server ripropone la chiave vecchia rubata (firma valida): si legge (limite)", "falso"),  # [palacan-cl2d3]
+        ("PQ: Bob apre la busta dopo il rinnovo (modello non vuoto)", "falso"),
+    ],
 }
 
 

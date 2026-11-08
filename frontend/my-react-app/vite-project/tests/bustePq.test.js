@@ -11,7 +11,7 @@ import Olm from '../src/crypto/olm.js';
 import { _usaArchivio } from '../src/utils/chiaveDispositivo';
 import { assicuraChiaviPq, semePq } from '../src/utils/chiaviPq';
 import { impostaFirmatario, conChiaviMittente, imparaDaPayloadOlm, segnaPqPronto, supportoPqAnnunciato, _azzeraFirmaAutore } from '../src/utils/firmaAutore';
-import { chiaviPqPer, chiudiPerDispositivo, apriSeBusta, TIPO_BUSTA } from '../src/utils/bustePq';
+import { chiaviPqPer, chiudiPerDispositivo, apriSeBusta, TIPO_BUSTA, _consentiSenzaPqSoloTest } from '../src/utils/bustePq';  // [palacan-cl2b]
 
 beforeAll(async () => {
   if (!globalThis.crypto || !globalThis.crypto.subtle) Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
@@ -66,6 +66,7 @@ describe('PQ4 - doppia busta delle chiavi di stanza', () => {
     localStorage.clear();
     _usaArchivio(archivioInMemoria());
     _azzeraFirmaAutore();
+    _consentiSenzaPqSoloTest(false);  // [palacan-cl2b] qui la busta e' obbligatoria, come nell'app vera
     alice = persona('alice');
     bob = persona('bob');
     s = server(bob);
@@ -112,15 +113,37 @@ describe('PQ4 - doppia busta delle chiavi di stanza', () => {
       .toThrow(/niente formato vecchio/);
   });
 
-  it('dispositivo senza chiavi post-quantum e senza annuncio (non ancora aggiornato): si manda come prima', () => {
-    const vecchio = chiudiPerDispositivo({ payload: chiaveDiStanza, io: 'alice', curvaMia: alice.curva, destinatario: 'carlo', curvaDest: 'C-carlo', chiaviPq: new Map() });
-    expect(vecchio).toBe(chiaveDiStanza);
+  it('[palacan-cl2b] dispositivo senza chiavi post-quantum (anche senza annuncio): a quel dispositivo non si manda niente', () => {
+    expect(() => chiudiPerDispositivo({ payload: chiaveDiStanza, io: 'alice', curvaMia: alice.curva, destinatario: 'carlo', curvaDest: 'C-carlo', chiaviPq: new Map() }))
+      .toThrow(/non parte senza busta/);
+    expect(() => chiudiPerDispositivo({ payload: chiaveDiStanza, io: 'alice', curvaMia: alice.curva, destinatario: 'carlo', curvaDest: null, chiaviPq: new Map() }))
+      .toThrow(/non parte senza busta/);
+    expect(() => chiudiPerDispositivo({ payload: chiaveDiStanza, io: 'alice', curvaMia: alice.curva, destinatario: 'carlo', curvaDest: 'C-carlo', chiaviPq: null }))
+      .toThrow(/non parte senza busta/);
+  });
+
+  it('[palacan-cl2b] ricezione: una chiave di stanza arrivata senza busta post-quantum si rifiuta (anche quelle inoltrate)', async () => {
+    const aperto = await apriSeBusta({ io: 'bob', mittente: 'alice', curvaMittente: alice.curva, curvaMia: bob.curva, plaintext: chiaveDiStanza });
+    expect(JSON.parse(aperto).type).toBe('palacan.pq.non_apribile');
+    for (const tipo of ['m.room_key', 'm.forwarded_room_key', 'm.forwarded_room_keys']) {
+      const p = JSON.stringify({ type: tipo, content: { session_key: 'segreto' }, nota: TIPO_BUSTA });
+      expect(JSON.parse(await apriSeBusta({ io: 'bob', mittente: 'alice', curvaMittente: alice.curva, curvaMia: bob.curva, plaintext: p })).type).toBe('palacan.pq.non_apribile');
+    }
+  });
+
+  it('[palacan-cl2b] il permesso di andare senza busta esiste solo dentro vitest, e qui e\' spento', () => {
+    const src = readFileSync('src/utils/bustePq.js', 'utf8');
+    expect(src).toContain("const SOLO_TEST = Boolean(import.meta.env && import.meta.env.MODE === 'test');");
+    expect(src).toContain('if (!SOLO_TEST) return false;');
+    expect(src).toContain('let senzaPqNeiTest = null;');
+    expect(src).not.toMatch(/return payload; \/\/ dispositivo senza chiavi post-quantum/);
   });
 
   it('i messaggi che non sono chiavi restano come sono; un testo normale passa intatto in ricezione', async () => {
     const altro = JSON.stringify({ type: 'm.dummy', content: {} });
     expect(chiudiPerDispositivo({ payload: altro, io: 'alice', curvaMia: alice.curva, destinatario: 'bob', curvaDest: bob.curva, chiaviPq: await chiaviPqPer('bob', 't', s.api) })).toBe(altro);
-    expect(await apriSeBusta({ io: 'bob', mittente: 'alice', curvaMittente: alice.curva, curvaMia: bob.curva, plaintext: chiaveDiStanza })).toBe(chiaveDiStanza);
+    expect(await apriSeBusta({ io: 'bob', mittente: 'alice', curvaMittente: alice.curva, curvaMia: bob.curva, plaintext: altro })).toBe(altro);  // [palacan-cl2b]
+    expect(await apriSeBusta({ io: 'bob', mittente: 'alice', curvaMittente: alice.curva, curvaMia: bob.curva, plaintext: 'non json' })).toBe('non json');
   });
 
   it('riserva: si usa quando le usa e getta sono finite e il suo seme resta', async () => {

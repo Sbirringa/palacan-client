@@ -41,6 +41,22 @@ qualcuno ruba lo stato delle chiavi: cosa resta protetto, cosa no e cosa lo ripa
 
 Anche qui ogni modello controlla che la consegna avvenga davvero (modello non vuoto).
 
+## Cosa è dimostrato sul rinnovo delle chiavi post-quantum (CL2d, ProVerif)
+<!-- [palacan-cl2d] -->
+
+Le chiavi di stanza viaggiano in una busta ML-KEM verso una chiave usa e getta del dispositivo destinatario (CL2b: la
+busta è obbligatoria). Questo modello dice cosa succede quando qualcuno ruba lo stato di quel dispositivo, e perché le
+chiavi usa e getta non usate si rinnovano ogni 7 giorni (CL2c). Caso peggiore: lo strato Olm intorno alla busta è già
+rotto da un computer quantistico, quindi conta solo ML-KEM.
+
+| Modello | Proprietà | Risultato atteso |
+|---|---|---|
+| `6_rinnovo_prechiavi.pv` | Una busta mandata a una chiave usa e getta **già usata** resta segreta anche dopo il furto: il seme si cancella appena la busta si apre. | dimostrata |
+| | Una busta mandata a una chiave **rubata** e ancora pubblicata si legge. Succedeva prima di CL2c, quando le chiavi non usate restavano valide per sempre, e succede ancora nella finestra prima del rinnovo (al massimo 7 giorni). | attacco trovato |
+| | Dopo il rinnovo le buste nuove sono di nuovo segrete (sicurezza dopo il furto), se la chiave nuova arriva senza manomissioni. | dimostrata |
+| | Se il ladro controlla anche il server e, al posto della chiave nuova, consegna la chiave **vecchia** rubata, che ha ancora la sua firma valida, la sicurezza non torna: è un limite dichiarato, lo stesso del modello 5. | attacco trovato |
+| | Bob apre la busta mandata dopo il rinnovo (modello non vuoto). | raggiungibile |
+
 ## Cosa è dimostrato nel codice Rust (PQ6b: Kani, proptest, mutanti)
 
 ProVerif ragiona sul protocollo. Il codice Rust che va online (`crypto/palacan-crypto`) è controllato a parte:
@@ -117,6 +133,19 @@ Impronte: ML-DSA-65 `b17eb99909ede552…`, ed25519 `laOmhJxypCT8…`.
 | **L4d** (`cbaf475`) | Chiamate e videochiamate bloccate verso un contatto verificato che presenta una chiave mai vista. |
 | **L4e** (`d508ab5`) | Offerta, risposta e candidati ICE della chiamata cifrati end-to-end con la chiave Megolm della chat e autenticati: il server non può fare da intermediario sulla chiamata, perché le impronte DTLS viaggiano cifrate, e non vede se è una videochiamata. Più: protezione contro le ripetizioni e validità di 5 minuti. La chiave della chat si condivide al massimo una volta ogni 30 secondi per chiamata (R1). Prova: `frontend/my-react-app/vite-project/src/utils/segnaliChiamata.js`, `frontend/my-react-app/vite-project/tests/segnaliChiamata.test.js` (motore vero). |
 
+### CL – Crittografia rafforzata: post-quantum senza eccezioni
+<!-- [palacan-cl2d] -->
+
+| Passo | Garanzia | Prova |
+|---|---|---|
+| **CL1** (`b6399bd`) | Le chiavi Curve25519 deboli (di ordine basso, che rendono nullo il Diffie-Hellman) sono rifiutate prima di aprire una sessione Olm. | `crypto/palacan-crypto/tests/chiavi_deboli.rs` (14 chiavi deboli) |
+| **CL2e** (`c4699fb`) | Niente più ripiego sull'invio Olm vecchio quando l'invio cifrato non riesce: il messaggio resta in coda e riparte dal canale giusto. | `frontend/my-react-app/vite-project/tests/cl2eNienteRipiegoLegacy.test.js` |
+| **CL2b** (`fee4f77`) | Busta post-quantum **obbligatoria**: una chiave di stanza non parte mai senza busta ML-KEM e non si accetta se arriva senza, nemmeno al primo contatto. | `frontend/my-react-app/vite-project/tests/bustePq.test.js` |
+| **CL2f** (`f9549f7`, `fc6d998`) | Buste sigillate ibride X25519 + ML-KEM-768: chi manda una chiave di stanza e i nomi dei gruppi negli inviti restano nascosti anche a chi registra oggi il traffico e domani ha un computer quantistico. | `frontend/my-react-app/vite-project/tests/cl2fBusteIbride.test.js`, `backend/tests/security/test_cl2f_busta_pq.py` |
+| **CL2c** (`f92f97e`) | Le chiavi ML-KEM usa e getta non usate si rinnovano ogni 7 giorni; i semi ritirati restano 30 giorni per le buste già partite, poi si cancellano. Un furto dello stato smette di servire dopo il rinnovo. | `frontend/my-react-app/vite-project/tests/cl2cRinnovoPq.test.js`, `formale/proverif/6_rinnovo_prechiavi.pv` |
+| **CL2g** (`a18d9fa`) | La busta di ogni persona è firmata dalla sua chiave principale (ed25519 + ML-DSA-65): il server non può sostituirla con una sua. | `frontend/my-react-app/vite-project/tests/cl2gBustaFirmata.test.js`, `backend/tests/security/test_cl2g_busta_firmata.py` |
+| **CL2d** | Modello formale 6: rinnovo delle chiavi post-quantum e furto dello stato (sezione più sopra). | `formale/proverif/6_rinnovo_prechiavi.pv`, `formale/proverif/verifica.py` |
+
 ### Limiti dichiarati (cosa NON è garantito oggi)
 
 - **Il web dipende ancora dal server, per chi non usa l'estensione.** Chi apre Palacan senza Palacan Verifica riceve
@@ -142,6 +171,14 @@ Impronte: ML-DSA-65 `b17eb99909ede552…`, ed25519 `laOmhJxypCT8…`.
   recupera dopo.
 - **Modalità Riserva.** Nei browser senza IndexedDB l'app gira in modalità ridotta (Riserva), con una conservazione
   locale delle chiavi più debole di quella normale.
+- **Busta firmata: fiducia al primo uso (CL2g).** La firma della busta si controlla con la chiave principale del
+  destinatario. Se chi scrive non l'ha mai vista e il server non la consegna, la busta si usa come prima, senza
+  firma: è la stessa fiducia al primo uso di L4c. Una chiave principale già vista vale anche se il server smette di
+  consegnarla.
+- **Rinnovo delle chiavi post-quantum (CL2c).** Dopo un furto dello stato del dispositivo, le buste verso le chiavi
+  rubate restano leggibili fino al rinnovo (al massimo 7 giorni, con l'app aperta). E se il ladro controlla anche
+  il server, può continuare a consegnare le chiavi vecchie rubate, che hanno ancora la loro firma valida (o chiavi sue
+  firmate con le chiavi rubate): la sicurezza non torna da sola, serve togliere il dispositivo (modello 6).
 - **Ratchet dimostrato in modo simbolico (L6).** Il ratchet di Olm e di Megolm è nei modelli 4 e 5, con primitive
   ideali e un numero limitato di passi. Restano due limiti, dichiarati e mostrati dai modelli: un dispositivo rubato
   legge la cronologia di Megolm che aveva già ricevuto; dopo un furto, Olm torna sicuro solo dopo un giro di chiavi

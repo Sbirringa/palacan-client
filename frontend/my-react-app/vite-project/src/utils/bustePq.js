@@ -25,6 +25,25 @@ import { chiavePqFirma, chiavePqFirmaNota, verificaIbrida } from './firmaPq';  /
 
 export const TIPO_BUSTA = 'palacan.pq.v1';
 const TIPI_PROTETTI = new Set(['m.room_key', 'm.forwarded_room_keys', 'm.forwarded_room_key']);
+// [palacan-cl2b] Busta post-quantum OBBLIGATORIA: una chiave di stanza non parte mai senza busta ML-KEM (nemmeno verso
+// un dispositivo che non ha mai annunciato chiavi post-quantum: il server potrebbe nasconderle proprio a un dispositivo
+// nuovo) e non si accetta se arriva senza. Il dispositivo che non ha ancora chiavi riceve la chiave al giro successivo
+// di condivisione, appena le pubblica. L'unica eccezione e' per i test vecchi che non preparano chiavi post-quantum:
+// vale SOLO dentro vitest (nella build Vite sostituisce import.meta.env.MODE e il permesso sparisce).
+const SOLO_TEST = Boolean(import.meta.env && import.meta.env.MODE === 'test');
+let senzaPqNeiTest = null;
+const RIFIUTATO = JSON.stringify({ type: 'palacan.pq.non_apribile' });
+
+/** Solo per i test: true = i test vecchi possono mandare chiavi senza busta; false = obbligatoria (come nell'app). */
+export function _consentiSenzaPqSoloTest(valore) {
+  senzaPqNeiTest = valore;
+}
+
+function senzaPqConsentito() {
+  if (!SOLO_TEST) return false;
+  if (senzaPqNeiTest !== null) return Boolean(senzaPqNeiTest);
+  return Boolean(globalThis.__PALACAN_TEST_SENZA_PQ__);
+}
 const testo = (v) => (v == null ? '' : String(v).trim());
 
 export function contestoBusta(mittente, curvaMittente, destinatario, curvaDestinatario) {
@@ -88,7 +107,10 @@ export function chiudiPerDispositivo({ payload, io, curvaMia, destinatario, curv
     if (supportoPqAnnunciato(io, destinatario, curvaDest)) {
       throw new Error(`PQ: il dispositivo di ${destinatario} ha chiavi post-quantum ma il server non le ha date: niente formato vecchio`);
     }
-    return payload; // dispositivo senza chiavi post-quantum (non ancora aggiornato): come prima
+    if (!senzaPqConsentito()) {  // [palacan-cl2b]
+      throw new Error(`PQ: nessuna chiave post-quantum per il dispositivo di ${destinatario}: la chiave di stanza non parte senza busta`);
+    }
+    return payload; // solo nei test vecchi (vedi senzaPqConsentito)
   }
   const ed = chiaveFirmaPerCurva(io, destinatario, curvaDest);
   if (ed && !verificaFirma(ed, testoFirmaPq(destinatario, voce.device_id, voce.key_id, voce.tipo, voce.chiave), voce.firma)) {
@@ -111,15 +133,20 @@ export function chiudiPerDispositivo({ payload, io, curvaMia, destinatario, curv
 
 /** Dopo la decifratura Olm: se e' una busta post-quantum la apre (e consuma il seme usa e getta). Mai un'eccezione. */
 export async function apriSeBusta({ io, mittente, curvaMittente, curvaMia, plaintext }) {
-  if (typeof plaintext !== 'string' || !plaintext.includes(TIPO_BUSTA)) return plaintext;
+  if (typeof plaintext !== 'string') return plaintext;
   let letto = null;
   try {
     letto = JSON.parse(plaintext);
   } catch (_) {
     return plaintext;
   }
+  // [palacan-cl2b] una chiave di stanza arrivata SENZA busta post-quantum non si accetta
+  if (letto && TIPI_PROTETTI.has(letto.type) && !senzaPqConsentito()) {
+    console.warn(`⚠️ [PQ] chiave di stanza da ${mittente} senza busta post-quantum: rifiutata`);
+    return RIFIUTATO;
+  }
   if (!letto || letto.type !== TIPO_BUSTA || !letto.pq) return plaintext;
-  const rifiutato = JSON.stringify({ type: 'palacan.pq.non_apribile' });
+  const rifiutato = RIFIUTATO;
   try {
     const keyId = testo(letto.pq.key_id);
     const seme = await semePq(io, keyId);
