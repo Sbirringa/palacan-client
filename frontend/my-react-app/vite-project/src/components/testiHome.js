@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const en = {
   nav: {
-    security: 'Security', technology: 'Technology', openSource: 'Open Source', ecosystem: 'Ecosystem', about: 'About', faq: 'FAQ',
+    security: 'Security', technology: 'Technology', openSource: 'Open Source', documents: 'Documents', ecosystem: 'Ecosystem', about: 'About', faq: 'FAQ',
     privacy: 'Privacy', terms: 'Terms', login: 'Log in', getStarted: 'Get started', home: 'Home',
     menuOpen: 'Open menu', menuClose: 'Close menu', language: 'Language', skip: 'Skip to content',
   },
@@ -124,7 +124,7 @@ const en = {
 
 const it = {
   nav: {
-    security: 'Sicurezza', technology: 'Tecnologia', openSource: 'Open Source', ecosystem: 'Ecosistema', about: 'Chi siamo', faq: 'FAQ',
+    security: 'Sicurezza', technology: 'Tecnologia', openSource: 'Open Source', documents: 'Documenti', ecosystem: 'Ecosistema', about: 'Chi siamo', faq: 'FAQ',
     privacy: 'Privacy', terms: 'Termini', login: 'Accedi', getStarted: 'Inizia', home: 'Home',
     menuOpen: 'Apri il menu', menuClose: 'Chiudi il menu', language: 'Lingua', skip: 'Vai al contenuto',
   },
@@ -240,7 +240,7 @@ const it = {
 
 const fr = {
   nav: {
-    security: 'Sécurité', technology: 'Technologie', openSource: 'Open Source', ecosystem: 'Écosystème', about: 'À propos', faq: 'FAQ',
+    security: 'Sécurité', technology: 'Technologie', openSource: 'Open Source', documents: 'Documents', ecosystem: 'Écosystème', about: 'À propos', faq: 'FAQ',
     privacy: 'Confidentialité', terms: 'Conditions', login: 'Se connecter', getStarted: 'Commencer', home: 'Accueil',
     menuOpen: 'Ouvrir le menu', menuClose: 'Fermer le menu', language: 'Langue', skip: 'Aller au contenu',
   },
@@ -356,7 +356,7 @@ const fr = {
 
 const es = {
   nav: {
-    security: 'Seguridad', technology: 'Tecnología', openSource: 'Open Source', ecosystem: 'Ecosistema', about: 'Quiénes somos', faq: 'FAQ',
+    security: 'Seguridad', technology: 'Tecnología', openSource: 'Open Source', documents: 'Documentos', ecosystem: 'Ecosistema', about: 'Quiénes somos', faq: 'FAQ',
     privacy: 'Privacidad', terms: 'Términos', login: 'Iniciar sesión', getStarted: 'Empezar', home: 'Inicio',
     menuOpen: 'Abrir menú', menuClose: 'Cerrar menú', language: 'Idioma', skip: 'Ir al contenido',
   },
@@ -472,7 +472,7 @@ const es = {
 
 const de = {
   nav: {
-    security: 'Sicherheit', technology: 'Technologie', openSource: 'Open Source', ecosystem: 'Ökosystem', about: 'Über uns', faq: 'FAQ',
+    security: 'Sicherheit', technology: 'Technologie', openSource: 'Open Source', documents: 'Dokumente', ecosystem: 'Ökosystem', about: 'Über uns', faq: 'FAQ',
     privacy: 'Datenschutz', terms: 'AGB', login: 'Anmelden', getStarted: 'Loslegen', home: 'Start',
     menuOpen: 'Menü öffnen', menuClose: 'Menü schließen', language: 'Sprache', skip: 'Zum Inhalt springen',
   },

@@ -283,6 +283,7 @@ import PrivacyPage from './public/PrivacyPage.jsx';
 import TermsPage from './public/TermsPage.jsx';
 import TechnologyPage from './public/TechnologyPage.jsx';
 import OpenSourcePage from './public/OpenSourcePage.jsx';
+import DocumentsPage from './public/DocumentsPage.jsx';  // [palacan-v4b]
 import FaqPage from './public/FaqPage.jsx';
 import { getSecureItem, setSecureItem, removeSecureItem, migrateLegacyPlaintextKey } from './secureStorage';
 import { ID_PROVVISORIO, nuovoIdProvvisorio } from './utils/idProvvisorio';  // [palacan-m1c]
@@ -5167,6 +5168,7 @@ const handleSendMessage = async (text, replyTo = null) => {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/termini" element={<TermsPage />} />
           <Route path="/open-source" element={<OpenSourcePage />} />
+          <Route path="/documenti" element={<DocumentsPage />} />
           <Route path="/tecnologia" element={<TechnologyPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route
@@ -5386,6 +5388,7 @@ const handleSendMessage = async (text, replyTo = null) => {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/termini" element={<TermsPage />} />
         <Route path="/open-source" element={<OpenSourcePage />} />
+        <Route path="/documenti" element={<DocumentsPage />} />
         <Route path="/tecnologia" element={<TechnologyPage />} />
         <Route path="/faq" element={<FaqPage />} />
         {/* v1.10 (NEW): stesso link pubblico /i/:token, ma qui l'utente è           GIÀ autenticato (es. lo ha cliccato standosene su un altro tab

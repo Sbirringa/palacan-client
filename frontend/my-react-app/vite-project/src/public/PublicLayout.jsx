@@ -23,6 +23,7 @@ function useNav() {
       { label: t.nav.security, href: '/sicurezza' },
       { label: t.nav.technology, href: '/tecnologia' },
       { label: t.nav.openSource, href: '/open-source' },
+      { label: t.nav.documents, href: '/documenti' },  // [palacan-v4b]
       { label: t.nav.ecosystem, href: '/ecosistema' },
       { label: t.nav.about, href: '/chi-siamo' },
       { label: t.nav.faq, href: '/faq' },
